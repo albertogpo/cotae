@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotaê — Comparador de VET</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12151a">
+<link rel="apple-touch-icon" href="icons/cotae-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cotaê">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12151a;
+    --panel: #1b1f27;
+    --panel-hi: #232833;
+    --line: #2a2f3a;
+    --ink: #e9ebee;
+    --ink-dim: #8891a0;
+    --techfx: #5ec8d8;
+    --techfx-dim: #2f4a52;
+    --higlobe: #e0a458;
+    --higlobe-dim: #4a3e2a;
+    --win: #7bc67e;
+    --err: #e07272;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:780px;margin:0 auto;}
+  .top-row{display:flex;justify-content:space-between;align-items:flex-start;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:32px;
+    font-weight:700;
+    letter-spacing:0.2px;
+    margin:0;
+    line-height:1.1;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--techfx);
+    margin:6px 0 20px;
+  }
+  .sub{
+    color:var(--ink-dim);
+    font-size:13px;
+    line-height:1.5;
+    margin:0 0 26px;
+    max-width:580px;
+  }
+  .sub code{color:var(--ink);background:var(--panel-hi);padding:1px 5px;border-radius:3px;}
+
+  .icon-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    border-radius:8px;
+    width:38px;height:38px;
+    font-size:16px;
+    cursor:pointer;
+    flex:none;
+  }
+  .icon-btn:hover{color:var(--ink);border-color:var(--ink-dim);}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+  }
+  .panel-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--ink-dim);
+    margin:0 0 16px;
+  }
+  .inputs{display:flex;gap:14px;flex-wrap:wrap;}
+  .field{flex:1;min-width:180px;}
+  .field label{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--ink-dim);margin-bottom:8px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .dot.techfx{background:var(--techfx);}
+  .dot.higlobe{background:var(--higlobe);}
+  .field input{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    padding:10px 12px;
+    outline:none;
+  }
+  .field input:focus{border-color:var(--techfx);}
+  .hint{font-size:11px;color:var(--ink-dim);margin-top:16px;}
+
+  button{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--bg);
+    border:none;
+    border-radius:6px;
+    padding:12px 20px;
+    cursor:pointer;
+    margin-top:16px;
+  }
+  button:hover{opacity:0.88;}
+  button.ghost{
+    background:transparent;
+    color:var(--ink-dim);
+    border:1px solid var(--line);
+    font-size:11px;
+    padding:8px 14px;
+    margin-top:0;
+  }
+  button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
+  button:disabled{opacity:0.5;cursor:default;}
+
+  .results{display:flex;flex-direction:column;gap:10px;}
+  .row{
+    display:grid;
+    grid-template-columns: 12px 1fr auto auto;
+    align-items:center;
+    gap:14px;
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .row.best{border-color:var(--win);}
+  .row .bar{height:100%;border-radius:3px;}
+  .row .label{font-size:13px;}
+  .row .label .small{display:block;color:var(--ink-dim);font-size:11px;margin-top:2px;}
+  .row .vet{font-size:18px;font-weight:600;text-align:right;}
+  .row .badge{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--win);
+    text-align:right;
+    min-width:52px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead th{
+    text-align:left;
+    color:var(--ink-dim);
+    font-weight:500;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:6px 8px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:8px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody tr:hover{background:var(--panel-hi);}
+  .best-cell{color:var(--win);font-weight:600;}
+  .empty{color:var(--ink-dim);font-size:13px;padding:20px 0;text-align:center;}
+  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .head-row .panel-title{margin:0;}
+  .scroll{overflow-x:auto;}
+
+  .sync-status{
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;color:var(--ink-dim);
+    margin-top:12px;
+  }
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
+  .sync-dot.ok{background:var(--win);}
+  .sync-dot.err{background:var(--err);}
+  .sync-dot.busy{background:var(--techfx);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:24px;max-width:420px;width:100%;
+  }
+  .modal h2{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 10px;}
+  .modal p{font-size:12px;color:var(--ink-dim);line-height:1.5;margin:0 0 16px;}
+  .modal input{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
+    color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:10px 12px;
+    margin-bottom:12px;outline:none;
+  }
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row">
+    <div>
+      <h1>Cotaê</h1>
+      <p class="eyebrow">Comparador de VET</p>
+    </div>
+    <button class="icon-btn" id="settingsBtn" title="Configurações">⚙</button>
+  </div>
+
+  <p class="sub">
+    Insira a cotação do momento em cada plataforma. O VET (taxa efetiva) é calculado como
+    <code>cotação × (1 − spread)</code> para os três cenários. O histórico sincroniza entre seus
+    aparelhos via Dropbox.
+  </p>
+
+  <div class="panel">
+    <p class="panel-title">Cotação atual</p>
+    <div class="inputs">
+      <div class="field">
+        <label><span class="dot techfx"></span>TechFX</label>
+        <input type="number" inputmode="decimal" step="0.0001" id="techfxRate" placeholder="ex: 5.4200">
+      </div>
+      <div class="field">
+        <label><span class="dot higlobe"></span>Higlobe</label>
+        <input type="number" inputmode="decimal" step="0.0001" id="higlobeRate" placeholder="ex: 5.4350">
+      </div>
+    </div>
+    <button id="calcBtn">Calcular VET</button>
+    <p class="hint">Os campos vêm preenchidos com a última consulta. Enter no primeiro campo pula pro segundo; Enter no segundo já calcula.</p>
+    <div class="sync-status" id="syncStatus">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">Sincronização não configurada</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="panel-title">Resultado desta consulta</p>
+    <div class="results" id="results">
+      <p class="empty">Insira as cotações acima e clique em "Calcular VET".</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="head-row">
+      <p class="panel-title">Histórico de consultas</p>
+      <div style="display:flex;gap:8px;">
+        <button class="ghost" id="syncNowBtn">Sincronizar agora</button>
+        <button class="ghost" id="clearBtn">Limpar histórico</button>
+      </div>
+    </div>
+    <div class="scroll">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>TechFX cot.</th>
+            <th>Higlobe cot.</th>
+            <th>TechFX promo</th>
+            <th>TechFX normal</th>
+            <th>Higlobe</th>
+            <th>Melhor</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <p class="empty" id="historyEmpty">Nenhuma consulta ainda.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal">
+    <h2>Sincronização com Dropbox</h2>
+    <p>
+      Cole aqui o token de acesso gerado no Dropbox App Console. Ele fica salvo só
+      neste navegador (localStorage), nunca no código do app.
+    </p>
+    <input type="password" id="tokenInput" placeholder="Token de acesso do Dropbox">
+    <div class="modal-actions">
+      <button class="ghost" id="settingsCancel">Cancelar</button>
+      <button id="settingsSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCENARIOS = [
+  { key: 'techfxPromo', name: 'TechFX promocional', spreadLabel: 'spread 0,1%', spread: 0.001, source: 'techfx', color: 'var(--techfx)' },
+  { key: 'techfxNormal', name: 'TechFX normal', spreadLabel: 'spread 0,5%', spread: 0.005, source: 'techfx', color: 'var(--techfx-dim)' },
+  { key: 'higlobe', name: 'Higlobe', spreadLabel: 'spread 0,3%', spread: 0.003, source: 'higlobe', color: 'var(--higlobe)' },
+];
+
+const TOKEN_KEY = 'cotae-dropbox-token';
+const LOCAL_HISTORY_KEY = 'cotae-history-cache';
+const DROPBOX_PATH = '/historico.json';
+
+let history = [];
+
+const techfxInput = document.getElementById('techfxRate');
+const higlobeInput = document.getElementById('higlobeRate');
+const resultsEl = document.getElementById('results');
+const historyBody = document.getElementById('historyBody');
+const historyEmpty = document.getElementById('historyEmpty');
+const syncDot = document.getElementById('syncDot');
+const syncText = document.getElementById('syncText');
+
+function fmt(n){
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+}
+
+function computeVET(quote, spread){
+  return quote * (1 - spread);
+}
+
+function entryKey(e){
+  return `${e.date}|${e.time}|${e.techfxRate}|${e.higlobeRate}`;
+}
+
+function mergeHistories(a, b){
+  const map = new Map();
+  [...a, ...b].forEach(e => map.set(entryKey(e), e));
+  return Array.from(map.values()).sort((x, y) => {
+    // ordena por data+hora desc (assume formato dd/mm/aaaa e HH:MM:SS)
+    const parse = e => {
+      const [d, m, y] = (e.date || '01/01/1970').split('/');
+      return new Date(`${y}-${m}-${d}T${e.time || '00:00:00'}`).getTime();
+    };
+    return parse(y) - parse(x);
+  });
+}
+
+function getToken(){
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+
+function setSyncStatus(state, text){
+  syncDot.className = 'sync-dot' + (state ? ' ' + state : '');
+  syncText.textContent = text;
+}
+
+function loadLocalCache(){
+  try {
+    const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveLocalCache(){
+  localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(history));
+}
+
+async function dropboxDownload(token){
+  const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Dropbox-API-Arg': JSON.stringify({ path: DROPBOX_PATH })
+    }
+  });
+  if (res.status === 409){
+    // arquivo ainda não existe -- histórico remoto vazio
+    return [];
+  }
+  if (!res.ok){
+    throw new Error(`Download falhou: ${res.status}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function dropboxUpload(token, data){
+  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/octet-stream',
+      'Dropbox-API-Arg': JSON.stringify({
+        path: DROPBOX_PATH,
+        mode: 'overwrite',
+        mute: true
+      })
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok){
+    throw new Error(`Upload falhou: ${res.status}`);
+  }
+}
+
+async function syncWithDropbox(){
+  const token = getToken();
+  if (!token){
+    setSyncStatus('', 'Sincronização não configurada');
+    return;
+  }
+  setSyncStatus('busy', 'Sincronizando...');
+  try {
+    const remote = await dropboxDownload(token);
+    const merged = mergeHistories(history, remote);
+    history = merged;
+    saveLocalCache();
+    renderHistory();
+    await dropboxUpload(token, history);
+    setSyncStatus('ok', 'Sincronizado com Dropbox');
+  } catch (err) {
+    console.error(err);
+    setSyncStatus('err', 'Sem conexão com o Dropbox -- usando dados locais');
+  }
+}
+
+function buildEntry(date, time, techfxRate, higlobeRate){
+  const values = SCENARIOS.map(s => {
+    const base = s.source === 'techfx' ? techfxRate : higlobeRate;
+    return { ...s, vet: computeVET(base, s.spread) };
+  });
+  const maxVet = Math.max(...values.map(v => v.vet));
+  const best = values.find(v => v.vet === maxVet).name;
+  return { date, time, techfxRate, higlobeRate, values, best };
+}
+
+function prefillFromLastEntry(){
+  if (history.length === 0) return;
+  const last = history[0];
+  techfxInput.value = last.techfxRate;
+  higlobeInput.value = last.higlobeRate;
+}
+
+function focusAndSelect(input){
+  input.focus();
+  input.select();
+}
+
+function calculate(){
+  const techfxRate = parseFloat(techfxInput.value);
+  const higlobeRate = parseFloat(higlobeInput.value);
+
+  if (isNaN(techfxRate) || isNaN(higlobeRate) || techfxRate <= 0 || higlobeRate <= 0){
+    resultsEl.innerHTML = '<p class="empty">Preencha as duas cotações com valores válidos.</p>';
+    return;
+  }
+
+  const values = SCENARIOS.map(s => {
+    const base = s.source === 'techfx' ? techfxRate : higlobeRate;
+    return { ...s, vet: computeVET(base, s.spread) };
+  });
+
+  const maxVet = Math.max(...values.map(v => v.vet));
+
+  resultsEl.innerHTML = values.map(v => {
+    const isBest = v.vet === maxVet;
+    return `
+      <div class="row ${isBest ? 'best' : ''}">
+        <div class="bar" style="background:${v.color};width:4px;height:28px;"></div>
+        <div class="label">${v.name}<span class="small">${v.spreadLabel}</span></div>
+        <div class="vet">${fmt(v.vet)}</div>
+        <div class="badge">${isBest ? '★ melhor' : ''}</div>
+      </div>
+    `;
+  }).join('');
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const bestScenario = values.find(v => v.vet === maxVet);
+
+  history.unshift({
+    date: dateStr,
+    time: timeStr,
+    techfxRate,
+    higlobeRate,
+    values,
+    best: bestScenario.name
+  });
+
+  saveLocalCache();
+  renderHistory();
+  focusAndSelect(techfxInput);
+
+  syncWithDropbox();
+}
+
+function renderHistory(){
+  if (history.length === 0){
+    historyEmpty.style.display = 'block';
+    historyBody.innerHTML = '';
+    return;
+  }
+  historyEmpty.style.display = 'none';
+
+  historyBody.innerHTML = history.map(entry => {
+    const cells = entry.values.map(v => {
+      const isBest = v.name === entry.best;
+      return `<td class="${isBest ? 'best-cell' : ''}">${fmt(v.vet)}</td>`;
+    }).join('');
+    return `
+      <tr>
+        <td>${entry.date || '—'}</td>
+        <td>${entry.time}</td>
+        <td>${fmt(entry.techfxRate)}</td>
+        <td>${fmt(entry.higlobeRate)}</td>
+        ${cells}
+        <td class="best-cell">${entry.best}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.getElementById('calcBtn').addEventListener('click', calculate);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  history = [];
+  saveLocalCache();
+  renderHistory();
+  syncWithDropbox();
+});
+document.getElementById('syncNowBtn').addEventListener('click', syncWithDropbox);
+
+techfxInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter'){
+    e.preventDefault();
+    focusAndSelect(higlobeInput);
+  }
+});
+higlobeInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter'){
+    e.preventDefault();
+    calculate();
+  }
+});
+
+// --- Configurações / token ---
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const settingsCancel = document.getElementById('settingsCancel');
+const settingsSave = document.getElementById('settingsSave');
+const tokenInput = document.getElementById('tokenInput');
+
+settingsBtn.addEventListener('click', () => {
+  tokenInput.value = getToken();
+  settingsModal.classList.add('open');
+});
+settingsCancel.addEventListener('click', () => settingsModal.classList.remove('open'));
+settingsSave.addEventListener('click', () => {
+  const token = tokenInput.value.trim();
+  if (token){
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+  settingsModal.classList.remove('open');
+  syncWithDropbox();
+});
+
+// --- Inicialização ---
+history = loadLocalCache();
+renderHistory();
+prefillFromLastEntry();
+focusAndSelect(techfxInput);
+setSyncStatus('', getToken() ? 'Pronto para sincronizar' : 'Sincronização não configurada');
+syncWithDropbox();
+
+// --- Service worker (instalável / offline) ---
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.error('SW falhou:', err));
+  });
+}
+</script>
+</body>
+</html>
