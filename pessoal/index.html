@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotaê — Comparador de VET</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0e15">
+<link rel="apple-touch-icon" href="icons/cotae-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cotaê">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0e15;
+    --panel: #10151d;
+    --panel-hi: #171e28;
+    --line: #232c38;
+    --ink: #edf2f7;
+    --ink-dim: #7c8ba0;
+    --techfx: #4fc3ff;
+    --techfx-dim: #234a63;
+    --higlobe: #39e59d;
+    --higlobe-dim: #1d4a3b;
+    --win: #39e59d;
+    --err: #e0666f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 700px 500px at 15% -5%, rgba(79,195,255,0.14), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 15%, rgba(57,229,157,0.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    padding:28px 18px 60px;
+    padding-top:max(28px, calc(env(safe-area-inset-top, 0px) + 24px));
+  }
+  .wrap{max-width:780px;margin:0 auto;}
+  .top-row{display:flex;justify-content:space-between;align-items:flex-start;}
+  h1{
+    font-family:'Baloo 2',sans-serif;
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:0.2px;
+    margin:0;
+    line-height:1.1;
+    text-transform:lowercase;
+    background:linear-gradient(100deg, var(--higlobe) 0%, var(--techfx) 75%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 0 14px rgba(79,195,255,0.35)) drop-shadow(0 0 8px rgba(57,229,157,0.25));
+    width:fit-content;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin:6px 0 20px;
+  }
+  .sub{
+    color:var(--ink-dim);
+    font-size:13px;
+    line-height:1.5;
+    margin:0 0 26px;
+    max-width:580px;
+  }
+  .sub code{color:var(--ink);background:var(--panel-hi);padding:1px 5px;border-radius:3px;}
+
+  .icon-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    border-radius:8px;
+    width:38px;height:38px;
+    font-size:24px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    cursor:pointer;
+    flex:none;
+  }
+  .icon-btn:hover{color:var(--ink);border-color:var(--ink-dim);}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .panel-title{
+    font-family:'Baloo 2',sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--ink-dim);
+    margin:0 0 16px;
+    font-weight:600;
+  }
+  .inputs{display:flex;gap:14px;flex-wrap:wrap;}
+  .field{flex:1;min-width:180px;}
+  .field label{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--ink-dim);margin-bottom:8px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .dot.techfx{background:var(--techfx);}
+  .dot.higlobe{background:var(--higlobe);}
+  .field input{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    padding:10px 12px;
+    outline:none;
+  }
+  .field input:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
+  .hint{font-size:11px;color:var(--ink-dim);margin-top:16px;}
+
+  button{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+    background:linear-gradient(100deg, var(--higlobe), var(--techfx));
+    color:#06121a;
+    border:none;
+    border-radius:8px;
+    padding:12px 20px;
+    cursor:pointer;
+    margin-top:16px;
+    box-shadow:0 0 18px rgba(79,195,255,0.25), 0 0 12px rgba(57,229,157,0.18);
+  }
+  button:hover{opacity:0.9;}
+  button.ghost{
+    background:transparent;
+    color:var(--ink-dim);
+    border:1px solid var(--line);
+    font-size:11px;
+    padding:8px 14px;
+    margin-top:0;
+    box-shadow:none;
+  }
+  button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
+  button:disabled{opacity:0.5;cursor:default;box-shadow:none;}
+
+  .results{display:flex;flex-direction:column;gap:10px;}
+  .row{
+    display:grid;
+    grid-template-columns: 12px 1fr auto auto;
+    align-items:center;
+    gap:14px;
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+  }
+  .row.best{border-color:var(--win);box-shadow:0 0 16px rgba(57,229,157,0.18);}
+  .row .bar{height:100%;border-radius:3px;}
+  .row .label{font-size:13px;}
+  .row .label .small{display:block;color:var(--ink-dim);font-size:11px;margin-top:2px;}
+  .row .vet{font-size:18px;font-weight:600;text-align:right;}
+  .row .badge{
+    font-family:'Baloo 2',sans-serif;
+    font-size:10px;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--win);
+    text-align:right;
+    min-width:52px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead th{
+    text-align:left;
+    color:var(--ink-dim);
+    font-weight:500;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:6px 8px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:8px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody tr:hover{background:var(--panel-hi);}
+  .best-cell{color:var(--win);font-weight:600;}
+  .empty{color:var(--ink-dim);font-size:13px;padding:20px 0;text-align:center;}
+  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .head-row .panel-title{margin:0;}
+  .scroll{overflow-x:auto;}
+
+  .sync-status{
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;color:var(--ink-dim);
+    margin-top:12px;
+  }
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
+  .sync-dot.ok{background:var(--win);}
+  .sync-dot.err{background:var(--err);}
+  .sync-dot.busy{background:var(--techfx);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:24px;max-width:420px;width:100%;
+  }
+  .modal h2{font-family:'Baloo 2',sans-serif;font-size:17px;margin:0 0 10px;font-weight:700;}
+  .modal p{font-size:12px;color:var(--ink-dim);line-height:1.5;margin:0 0 16px;}
+  .modal input{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
+    color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:10px 12px;
+    margin-bottom:12px;outline:none;
+  }
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+  .offer-row{
+    display:grid;
+    grid-template-columns: 1fr 90px auto auto;
+    gap:8px;
+    align-items:center;
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px;
+  }
+  .offer-row input{
+    margin:0;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:8px 10px;
+    outline:none;
+    width:100%;
+  }
+  .offer-row input:focus{border-color:var(--techfx);}
+  .offer-row .mini-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    border-radius:6px;
+    width:30px;height:30px;
+    font-size:14px;
+    line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    padding:0;margin:0;
+    cursor:pointer;
+    flex:none;
+  }
+  .offer-row .mini-btn:hover{color:var(--ink);border-color:var(--ink-dim);}
+  .offer-row .mini-btn.danger:hover{color:var(--err);border-color:var(--err);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row">
+    <div>
+      <h1>Cotaê</h1>
+      <p class="eyebrow">Comparador de VET</p>
+    </div>
+    <button class="icon-btn" id="settingsBtn" title="Configurações">⚙</button>
+  </div>
+
+  <p class="sub">
+    Insira a cotação do momento em cada oferta cadastrada. O VET (taxa efetiva) é calculado como
+    <code>cotação × (1 − spread)</code>. O histórico sincroniza entre seus aparelhos via Dropbox.
+  </p>
+
+  <div class="panel">
+    <p class="panel-title">Cotação atual</p>
+    <div class="inputs" id="offerInputs"></div>
+    <button id="calcBtn">Calcular VET</button>
+    <p class="hint">Os campos vêm preenchidos com a última cotação de cada oferta. Enter pula pro próximo campo; Enter no último já calcula. Gerencie suas ofertas em ⚙ Configurações.</p>
+    <div class="sync-status" id="syncStatus">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">Sincronização não configurada</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="panel-title">Resultado desta consulta</p>
+    <div class="results" id="results">
+      <p class="empty">Insira as cotações acima e clique em "Calcular VET".</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="head-row">
+      <p class="panel-title">Histórico de consultas</p>
+      <div style="display:flex;gap:8px;">
+        <button class="ghost" id="syncNowBtn">Sincronizar agora</button>
+        <button class="ghost" id="clearBtn">Limpar histórico</button>
+      </div>
+    </div>
+    <div class="scroll">
+      <table id="historyTable">
+        <thead>
+          <tr id="historyHeadRow">
+            <th>Data</th>
+            <th>Hora</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <p class="empty" id="historyEmpty">Nenhuma consulta ainda.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal" style="max-width:480px;">
+    <h2>Ofertas</h2>
+    <p>
+      Cada oferta tem um nome e um spread fixo. A cotação de cada uma é digitada na tela
+      principal, a cada consulta.
+    </p>
+    <div id="offersList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+    <button class="ghost" id="addOfferBtn" style="margin-bottom:20px;">+ Nova oferta</button>
+
+    <h2>Sincronização com Dropbox</h2>
+    <p>
+      Cole aqui o App key, o App secret e o Refresh token gerados no Dropbox App Console.
+      Ficam salvos só neste navegador (localStorage), nunca no código do app. Com esses três
+      valores, o app renova o acesso sozinho, sem expirar.
+    </p>
+    <input type="text" id="appKeyInput" placeholder="App key">
+    <input type="password" id="appSecretInput" placeholder="App secret">
+    <input type="password" id="refreshTokenInput" placeholder="Refresh token">
+    <div class="modal-actions">
+      <button class="ghost" id="settingsCancel">Cancelar</button>
+      <button id="settingsSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const OFFERS_KEY = 'cotae-offers';
+const APP_KEY_KEY = 'cotae-dropbox-app-key';
+const APP_SECRET_KEY = 'cotae-dropbox-app-secret';
+const REFRESH_TOKEN_KEY = 'cotae-dropbox-refresh-token';
+const ACCESS_CACHE_KEY = 'cotae-dropbox-access-cache';
+const LOCAL_HISTORY_KEY = 'cotae-history-cache';
+const DROPBOX_PATH = '/historico.json';
+
+// Paleta cíclica de cores pras ofertas (a ordem de cadastro define a cor).
+const OFFER_COLORS = ['#4fc3ff', '#39e59d', '#e0a458', '#c084fc', '#f472b6', '#facc15'];
+
+const DEFAULT_OFFERS = [
+  { id: 'techfx-promo', name: 'TechFX promocional', spread: 0.001 },
+  { id: 'techfx-normal', name: 'TechFX normal', spread: 0.005 },
+  { id: 'higlobe', name: 'Higlobe', spread: 0.003 },
+];
+
+let offers = [];
+let history = [];
+let lastQuotes = {}; // offerId -> última cotação digitada, pra prefill
+
+const offerInputsEl = document.getElementById('offerInputs');
+const resultsEl = document.getElementById('results');
+const historyHeadRow = document.getElementById('historyHeadRow');
+const historyBody = document.getElementById('historyBody');
+const historyEmpty = document.getElementById('historyEmpty');
+const syncDot = document.getElementById('syncDot');
+const syncText = document.getElementById('syncText');
+
+function fmt(n){
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+}
+
+function fmtPct(spread){
+  return (spread * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 3 });
+}
+
+function computeVET(quote, spread){
+  return quote * (1 - spread);
+}
+
+function uid(){
+  return 'offer-' + Math.random().toString(36).slice(2, 10);
+}
+
+function offerColor(index){
+  return OFFER_COLORS[index % OFFER_COLORS.length];
+}
+
+// --- Ofertas: carregar/salvar ---
+function loadOffers(){
+  try {
+    const raw = localStorage.getItem(OFFERS_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return (parsed && parsed.length > 0) ? parsed : DEFAULT_OFFERS.map(o => ({ ...o }));
+  } catch (err) {
+    return DEFAULT_OFFERS.map(o => ({ ...o }));
+  }
+}
+
+function saveOffers(){
+  localStorage.setItem(OFFERS_KEY, JSON.stringify(offers));
+}
+
+function loadLastQuotes(){
+  try {
+    const raw = localStorage.getItem('cotae-last-quotes');
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function saveLastQuotes(){
+  localStorage.setItem('cotae-last-quotes', JSON.stringify(lastQuotes));
+}
+
+// --- Histórico: cache local ---
+function loadLocalCache(){
+  try {
+    const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveLocalCache(){
+  localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(history));
+}
+
+// --- Migração do formato antigo (techfxRate/higlobeRate/values) pro novo (offers) ---
+function migrateEntry(entry){
+  if (entry.offers) return entry; // já está no formato novo
+
+  const legacyMap = {
+    'TechFX promocional': entry.techfxRate,
+    'TechFX normal': entry.techfxRate,
+    'Higlobe': entry.higlobeRate,
+  };
+  const legacySpread = {
+    'TechFX promocional': 0.001,
+    'TechFX normal': 0.005,
+    'Higlobe': 0.003,
+  };
+
+  const newOffers = Object.keys(legacyMap).map(name => {
+    const quote = legacyMap[name];
+    const spread = legacySpread[name];
+    return { name, quote, spread, vet: computeVET(quote, spread) };
+  });
+
+  const best = entry.best || newOffers.reduce((a, b) => (b.vet > a.vet ? b : a)).name;
+
+  return { date: entry.date, time: entry.time, offers: newOffers, best };
+}
+
+function migrateHistory(list){
+  return list.map(migrateEntry);
+}
+
+// --- Sincronização Dropbox ---
+function getAppKey(){ return localStorage.getItem(APP_KEY_KEY) || ''; }
+function getAppSecret(){ return localStorage.getItem(APP_SECRET_KEY) || ''; }
+function getRefreshToken(){ return localStorage.getItem(REFRESH_TOKEN_KEY) || ''; }
+function hasDropboxCredentials(){
+  return !!(getAppKey() && getAppSecret() && getRefreshToken());
+}
+
+function getAccessCache(){
+  try {
+    const raw = localStorage.getItem(ACCESS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveAccessCache(accessToken, expiresInSeconds){
+  const expiresAt = Date.now() + (expiresInSeconds * 1000) - 60000; // margem de 1 min
+  localStorage.setItem(ACCESS_CACHE_KEY, JSON.stringify({ accessToken, expiresAt }));
+}
+
+async function refreshAccessToken(){
+  const res = await fetch('https://api.dropboxapi.com/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: getRefreshToken(),
+      client_id: getAppKey(),
+      client_secret: getAppSecret()
+    })
+  });
+  if (!res.ok){
+    throw new Error(`Renovação de token falhou: ${res.status}`);
+  }
+  const data = await res.json();
+  saveAccessCache(data.access_token, data.expires_in || 14400);
+  return data.access_token;
+}
+
+async function getValidAccessToken(){
+  const cache = getAccessCache();
+  if (cache && cache.expiresAt > Date.now()){
+    return cache.accessToken;
+  }
+  return refreshAccessToken();
+}
+
+function setSyncStatus(state, text){
+  syncDot.className = 'sync-dot' + (state ? ' ' + state : '');
+  syncText.textContent = text;
+}
+
+function entryKey(e){
+  return `${e.date}|${e.time}`;
+}
+
+function mergeHistories(a, b){
+  const map = new Map();
+  [...a, ...b].forEach(e => map.set(entryKey(e), e));
+  return Array.from(map.values()).sort((x, y) => {
+    const parse = e => {
+      const [d, m, y] = (e.date || '01/01/1970').split('/');
+      return new Date(`${y}-${m}-${d}T${e.time || '00:00:00'}`).getTime();
+    };
+    return parse(y) - parse(x);
+  });
+}
+
+async function dropboxDownload(token){
+  const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Dropbox-API-Arg': JSON.stringify({ path: DROPBOX_PATH })
+    }
+  });
+  if (res.status === 409){
+    return [];
+  }
+  if (!res.ok){
+    throw new Error(`Download falhou: ${res.status}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function dropboxUpload(token, data){
+  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/octet-stream',
+      'Dropbox-API-Arg': JSON.stringify({
+        path: DROPBOX_PATH,
+        mode: 'overwrite',
+        mute: true
+      })
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok){
+    throw new Error(`Upload falhou: ${res.status}`);
+  }
+}
+
+async function syncWithDropbox(){
+  if (!hasDropboxCredentials()){
+    setSyncStatus('', 'Sincronização não configurada');
+    return;
+  }
+  setSyncStatus('busy', 'Sincronizando...');
+  try {
+    const accessToken = await getValidAccessToken();
+    const remote = migrateHistory(await dropboxDownload(accessToken));
+    const merged = mergeHistories(history, remote);
+    history = merged;
+    saveLocalCache();
+    renderHistory();
+    await dropboxUpload(accessToken, history);
+    setSyncStatus('ok', 'Sincronizado com Dropbox');
+  } catch (err) {
+    console.error(err);
+    setSyncStatus('err', 'Sem conexão com o Dropbox -- usando dados locais');
+  }
+}
+
+// --- Tela principal: inputs dinâmicos por oferta ---
+function renderOfferInputs(){
+  offerInputsEl.innerHTML = offers.map((o, i) => `
+    <div class="field">
+      <label><span class="dot" style="background:${offerColor(i)}"></span>${o.name || 'Oferta sem nome'} <span style="color:var(--ink-dim);">(${fmtPct(o.spread)}%)</span></label>
+      <input type="number" inputmode="decimal" step="0.0001" class="offer-quote-input" data-offer-id="${o.id}" placeholder="ex: 5.4200">
+    </div>
+  `).join('');
+
+  const inputs = Array.from(offerInputsEl.querySelectorAll('.offer-quote-input'));
+  inputs.forEach((input, idx) => {
+    const offerId = input.dataset.offerId;
+    if (lastQuotes[offerId] != null){
+      input.value = lastQuotes[offerId];
+    }
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        const next = inputs[idx + 1];
+        if (next){
+          next.focus();
+          next.select();
+        } else {
+          calculate();
+        }
+      }
+    });
+  });
+}
+
+function focusFirstInput(){
+  const first = offerInputsEl.querySelector('.offer-quote-input');
+  if (first){
+    first.focus();
+    first.select();
+  }
+}
+
+function calculate(){
+  const inputs = Array.from(offerInputsEl.querySelectorAll('.offer-quote-input'));
+  const parsed = inputs.map(input => {
+    const offer = offers.find(o => o.id === input.dataset.offerId);
+    return { offer, quote: parseFloat(input.value) };
+  });
+
+  const invalid = parsed.some(p => isNaN(p.quote) || p.quote <= 0);
+  if (offers.length === 0 || invalid){
+    resultsEl.innerHTML = '<p class="empty">Preencha a cotação de todas as ofertas com valores válidos.</p>';
+    return;
+  }
+
+  const computed = parsed.map(({ offer, quote }) => ({
+    name: offer.name || 'Oferta sem nome',
+    quote,
+    spread: offer.spread,
+    vet: computeVET(quote, offer.spread)
+  }));
+
+  const maxVet = Math.max(...computed.map(v => v.vet));
+
+  resultsEl.innerHTML = computed.map((v, i) => {
+    const isBest = v.vet === maxVet;
+    return `
+      <div class="row ${isBest ? 'best' : ''}">
+        <div class="bar" style="background:${offerColor(i)};width:4px;height:28px;"></div>
+        <div class="label">${v.name}<span class="small">spread ${fmtPct(v.spread)}%</span></div>
+        <div class="vet">${fmt(v.vet)}</div>
+        <div class="badge">${isBest ? '★ melhor' : ''}</div>
+      </div>
+    `;
+  }).join('');
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const best = computed.find(v => v.vet === maxVet).name;
+
+  history.unshift({ date: dateStr, time: timeStr, offers: computed, best });
+
+  // Atualiza cache de última cotação por oferta, pra pré-preencher da próxima vez.
+  parsed.forEach(({ offer, quote }) => { lastQuotes[offer.id] = quote; });
+  saveLastQuotes();
+
+  saveLocalCache();
+  renderHistory();
+  focusFirstInput();
+
+  syncWithDropbox();
+}
+
+// --- Histórico: cabeçalho e linhas dinâmicas ---
+function renderHistory(){
+  // Cabeçalho: uma coluna por oferta configurada atualmente.
+  historyHeadRow.innerHTML = `
+    <th>Data</th>
+    <th>Hora</th>
+    ${offers.map(o => `<th>${o.name || 'Oferta'}</th>`).join('')}
+    <th>Melhor</th>
+  `;
+
+  if (history.length === 0){
+    historyEmpty.style.display = 'block';
+    historyBody.innerHTML = '';
+    return;
+  }
+  historyEmpty.style.display = 'none';
+
+  historyBody.innerHTML = history.map(entry => {
+    const cells = offers.map(o => {
+      const match = entry.offers.find(v => v.name === o.name);
+      const isBest = match && match.name === entry.best;
+      return `<td class="${isBest ? 'best-cell' : ''}">${match ? fmt(match.vet) : '—'}</td>`;
+    }).join('');
+    return `
+      <tr>
+        <td>${entry.date || '—'}</td>
+        <td>${entry.time}</td>
+        ${cells}
+        <td class="best-cell">${entry.best}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.getElementById('calcBtn').addEventListener('click', calculate);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  history = [];
+  saveLocalCache();
+  renderHistory();
+  syncWithDropbox();
+});
+document.getElementById('syncNowBtn').addEventListener('click', syncWithDropbox);
+
+// --- Configurações: ofertas + token ---
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const settingsCancel = document.getElementById('settingsCancel');
+const settingsSave = document.getElementById('settingsSave');
+const appKeyInput = document.getElementById('appKeyInput');
+const appSecretInput = document.getElementById('appSecretInput');
+const refreshTokenInput = document.getElementById('refreshTokenInput');
+const offersList = document.getElementById('offersList');
+const addOfferBtn = document.getElementById('addOfferBtn');
+
+// Cópia de trabalho editada dentro do modal -- só é aplicada de fato ao clicar "Salvar".
+let draftOffers = [];
+
+function renderOffersEditor(){
+  offersList.innerHTML = draftOffers.map((o, i) => `
+    <div class="offer-row" data-index="${i}">
+      <input type="text" class="offer-name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="Nome da oferta">
+      <input type="number" step="0.01" class="offer-spread-input" value="${o.spread * 100}" placeholder="Spread %">
+      <button class="mini-btn duplicate-offer-btn" title="Duplicar">⧉</button>
+      <button class="mini-btn danger remove-offer-btn" title="Remover">✕</button>
+    </div>
+  `).join('');
+
+  offersList.querySelectorAll('.offer-row').forEach(row => {
+    const idx = parseInt(row.dataset.index, 10);
+
+    row.querySelector('.offer-name-input').addEventListener('input', e => {
+      draftOffers[idx].name = e.target.value;
+    });
+    row.querySelector('.offer-spread-input').addEventListener('input', e => {
+      const pct = parseFloat(e.target.value);
+      draftOffers[idx].spread = isNaN(pct) ? 0 : pct / 100;
+    });
+    row.querySelector('.duplicate-offer-btn').addEventListener('click', () => {
+      const copy = { ...draftOffers[idx], id: uid(), name: (draftOffers[idx].name || 'Oferta') + ' (cópia)' };
+      draftOffers.splice(idx + 1, 0, copy);
+      renderOffersEditor();
+    });
+    row.querySelector('.remove-offer-btn').addEventListener('click', () => {
+      draftOffers.splice(idx, 1);
+      renderOffersEditor();
+    });
+  });
+}
+
+addOfferBtn.addEventListener('click', () => {
+  draftOffers.push({ id: uid(), name: '', spread: 0 });
+  renderOffersEditor();
+});
+
+settingsBtn.addEventListener('click', () => {
+  draftOffers = offers.map(o => ({ ...o }));
+  renderOffersEditor();
+  appKeyInput.value = getAppKey();
+  appSecretInput.value = getAppSecret();
+  refreshTokenInput.value = getRefreshToken();
+  settingsModal.classList.add('open');
+});
+settingsCancel.addEventListener('click', () => settingsModal.classList.remove('open'));
+settingsSave.addEventListener('click', () => {
+  offers = draftOffers.filter(o => (o.name || '').trim() !== '');
+  saveOffers();
+  renderOfferInputs();
+  renderHistory();
+  focusFirstInput();
+
+  const appKey = appKeyInput.value.trim();
+  const appSecret = appSecretInput.value.trim();
+  const refreshToken = refreshTokenInput.value.trim();
+
+  if (appKey) localStorage.setItem(APP_KEY_KEY, appKey); else localStorage.removeItem(APP_KEY_KEY);
+  if (appSecret) localStorage.setItem(APP_SECRET_KEY, appSecret); else localStorage.removeItem(APP_SECRET_KEY);
+  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken); else localStorage.removeItem(REFRESH_TOKEN_KEY);
+
+  // Credenciais podem ter mudado -- descarta qualquer access token em cache.
+  localStorage.removeItem(ACCESS_CACHE_KEY);
+
+  settingsModal.classList.remove('open');
+  syncWithDropbox();
+});
+
+// --- Inicialização ---
+offers = loadOffers();
+lastQuotes = loadLastQuotes();
+history = migrateHistory(loadLocalCache());
+saveLocalCache();
+
+renderOfferInputs();
+renderHistory();
+focusFirstInput();
+setSyncStatus('', hasDropboxCredentials() ? 'Pronto para sincronizar' : 'Sincronização não configurada');
+syncWithDropbox();
+
+// --- Service worker (instalável / offline) ---
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.error('SW falhou:', err));
+  });
+}
+</script>
+</body>
+</html>
