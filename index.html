@@ -348,10 +348,13 @@
 
     <h2>Sincronização com Dropbox</h2>
     <p>
-      Cole aqui o token de acesso gerado no Dropbox App Console. Ele fica salvo só
-      neste navegador (localStorage), nunca no código do app.
+      Cole aqui o App key, o App secret e o Refresh token gerados no Dropbox App Console.
+      Ficam salvos só neste navegador (localStorage), nunca no código do app. Com esses três
+      valores, o app renova o acesso sozinho, sem expirar.
     </p>
-    <input type="password" id="tokenInput" placeholder="Token de acesso do Dropbox">
+    <input type="text" id="appKeyInput" placeholder="App key">
+    <input type="password" id="appSecretInput" placeholder="App secret">
+    <input type="password" id="refreshTokenInput" placeholder="Refresh token">
     <div class="modal-actions">
       <button class="ghost" id="settingsCancel">Cancelar</button>
       <button id="settingsSave">Salvar</button>
@@ -361,7 +364,10 @@
 
 <script>
 const OFFERS_KEY = 'cotae-offers';
-const TOKEN_KEY = 'cotae-dropbox-token';
+const APP_KEY_KEY = 'cotae-dropbox-app-key';
+const APP_SECRET_KEY = 'cotae-dropbox-app-secret';
+const REFRESH_TOKEN_KEY = 'cotae-dropbox-refresh-token';
+const ACCESS_CACHE_KEY = 'cotae-dropbox-access-cache';
 const LOCAL_HISTORY_KEY = 'cotae-history-cache';
 const DROPBOX_PATH = '/historico.json';
 
@@ -479,8 +485,52 @@ function migrateHistory(list){
 }
 
 // --- Sincronização Dropbox ---
-function getToken(){
-  return localStorage.getItem(TOKEN_KEY) || '';
+function getAppKey(){ return localStorage.getItem(APP_KEY_KEY) || ''; }
+function getAppSecret(){ return localStorage.getItem(APP_SECRET_KEY) || ''; }
+function getRefreshToken(){ return localStorage.getItem(REFRESH_TOKEN_KEY) || ''; }
+function hasDropboxCredentials(){
+  return !!(getAppKey() && getAppSecret() && getRefreshToken());
+}
+
+function getAccessCache(){
+  try {
+    const raw = localStorage.getItem(ACCESS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveAccessCache(accessToken, expiresInSeconds){
+  const expiresAt = Date.now() + (expiresInSeconds * 1000) - 60000; // margem de 1 min
+  localStorage.setItem(ACCESS_CACHE_KEY, JSON.stringify({ accessToken, expiresAt }));
+}
+
+async function refreshAccessToken(){
+  const res = await fetch('https://api.dropboxapi.com/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: getRefreshToken(),
+      client_id: getAppKey(),
+      client_secret: getAppSecret()
+    })
+  });
+  if (!res.ok){
+    throw new Error(`Renovação de token falhou: ${res.status}`);
+  }
+  const data = await res.json();
+  saveAccessCache(data.access_token, data.expires_in || 14400);
+  return data.access_token;
+}
+
+async function getValidAccessToken(){
+  const cache = getAccessCache();
+  if (cache && cache.expiresAt > Date.now()){
+    return cache.accessToken;
+  }
+  return refreshAccessToken();
 }
 
 function setSyncStatus(state, text){
@@ -542,19 +592,19 @@ async function dropboxUpload(token, data){
 }
 
 async function syncWithDropbox(){
-  const token = getToken();
-  if (!token){
+  if (!hasDropboxCredentials()){
     setSyncStatus('', 'Sincronização não configurada');
     return;
   }
   setSyncStatus('busy', 'Sincronizando...');
   try {
-    const remote = migrateHistory(await dropboxDownload(token));
+    const accessToken = await getValidAccessToken();
+    const remote = migrateHistory(await dropboxDownload(accessToken));
     const merged = mergeHistories(history, remote);
     history = merged;
     saveLocalCache();
     renderHistory();
-    await dropboxUpload(token, history);
+    await dropboxUpload(accessToken, history);
     setSyncStatus('ok', 'Sincronizado com Dropbox');
   } catch (err) {
     console.error(err);
@@ -700,7 +750,9 @@ const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const settingsCancel = document.getElementById('settingsCancel');
 const settingsSave = document.getElementById('settingsSave');
-const tokenInput = document.getElementById('tokenInput');
+const appKeyInput = document.getElementById('appKeyInput');
+const appSecretInput = document.getElementById('appSecretInput');
+const refreshTokenInput = document.getElementById('refreshTokenInput');
 const offersList = document.getElementById('offersList');
 const addOfferBtn = document.getElementById('addOfferBtn');
 
@@ -747,7 +799,9 @@ addOfferBtn.addEventListener('click', () => {
 settingsBtn.addEventListener('click', () => {
   draftOffers = offers.map(o => ({ ...o }));
   renderOffersEditor();
-  tokenInput.value = getToken();
+  appKeyInput.value = getAppKey();
+  appSecretInput.value = getAppSecret();
+  refreshTokenInput.value = getRefreshToken();
   settingsModal.classList.add('open');
 });
 settingsCancel.addEventListener('click', () => settingsModal.classList.remove('open'));
@@ -758,12 +812,17 @@ settingsSave.addEventListener('click', () => {
   renderHistory();
   focusFirstInput();
 
-  const token = tokenInput.value.trim();
-  if (token){
-    localStorage.setItem(TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_KEY);
-  }
+  const appKey = appKeyInput.value.trim();
+  const appSecret = appSecretInput.value.trim();
+  const refreshToken = refreshTokenInput.value.trim();
+
+  if (appKey) localStorage.setItem(APP_KEY_KEY, appKey); else localStorage.removeItem(APP_KEY_KEY);
+  if (appSecret) localStorage.setItem(APP_SECRET_KEY, appSecret); else localStorage.removeItem(APP_SECRET_KEY);
+  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken); else localStorage.removeItem(REFRESH_TOKEN_KEY);
+
+  // Credenciais podem ter mudado -- descarta qualquer access token em cache.
+  localStorage.removeItem(ACCESS_CACHE_KEY);
+
   settingsModal.classList.remove('open');
   syncWithDropbox();
 });
@@ -777,7 +836,7 @@ saveLocalCache();
 renderOfferInputs();
 renderHistory();
 focusFirstInput();
-setSyncStatus('', getToken() ? 'Pronto para sincronizar' : 'Sincronização não configurada');
+setSyncStatus('', hasDropboxCredentials() ? 'Pronto para sincronizar' : 'Sincronização não configurada');
 syncWithDropbox();
 
 // --- Service worker (instalável / offline) ---
