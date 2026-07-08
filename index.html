@@ -6,33 +6,37 @@
 <title>Cotaê — Comparador de VET</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#12151a">
+<meta name="theme-color" content="#0a0e15">
 <link rel="apple-touch-icon" href="icons/cotae-icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cotaê">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #12151a;
-    --panel: #1b1f27;
-    --panel-hi: #232833;
-    --line: #2a2f3a;
-    --ink: #e9ebee;
-    --ink-dim: #8891a0;
-    --techfx: #5ec8d8;
-    --techfx-dim: #2f4a52;
-    --higlobe: #e0a458;
-    --higlobe-dim: #4a3e2a;
-    --win: #7bc67e;
-    --err: #e07272;
+    --bg: #0a0e15;
+    --panel: #10151d;
+    --panel-hi: #171e28;
+    --line: #232c38;
+    --ink: #edf2f7;
+    --ink-dim: #7c8ba0;
+    --techfx: #4fc3ff;
+    --techfx-dim: #234a63;
+    --higlobe: #39e59d;
+    --higlobe-dim: #1d4a3b;
+    --win: #39e59d;
+    --err: #e0666f;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
-    background:var(--bg);
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 700px 500px at 15% -5%, rgba(79,195,255,0.14), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 15%, rgba(57,229,157,0.10), transparent 60%),
+      var(--bg);
     color:var(--ink);
     font-family:'IBM Plex Mono', monospace;
     padding:28px 18px 60px;
@@ -40,19 +44,26 @@
   .wrap{max-width:780px;margin:0 auto;}
   .top-row{display:flex;justify-content:space-between;align-items:flex-start;}
   h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:32px;
+    font-family:'Baloo 2',sans-serif;
+    font-size:34px;
     font-weight:700;
     letter-spacing:0.2px;
     margin:0;
     line-height:1.1;
+    text-transform:lowercase;
+    background:linear-gradient(100deg, var(--higlobe) 0%, var(--techfx) 75%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 0 14px rgba(79,195,255,0.35)) drop-shadow(0 0 8px rgba(57,229,157,0.25));
+    width:fit-content;
   }
   .eyebrow{
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;
     letter-spacing:1.5px;
     text-transform:uppercase;
-    color:var(--techfx);
+    color:var(--ink-dim);
     margin:6px 0 20px;
   }
   .sub{
@@ -70,7 +81,12 @@
     color:var(--ink-dim);
     border-radius:8px;
     width:38px;height:38px;
-    font-size:16px;
+    font-size:24px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
     cursor:pointer;
     flex:none;
   }
@@ -79,17 +95,19 @@
   .panel{
     background:var(--panel);
     border:1px solid var(--line);
-    border-radius:10px;
+    border-radius:14px;
     padding:20px;
     margin-bottom:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.25);
   }
   .panel-title{
-    font-family:'Space Grotesk',sans-serif;
+    font-family:'Baloo 2',sans-serif;
     font-size:12px;
     text-transform:uppercase;
     letter-spacing:1.2px;
     color:var(--ink-dim);
     margin:0 0 16px;
+    font-weight:600;
   }
   .inputs{display:flex;gap:14px;flex-wrap:wrap;}
   .field{flex:1;min-width:180px;}
@@ -111,24 +129,25 @@
     padding:10px 12px;
     outline:none;
   }
-  .field input:focus{border-color:var(--techfx);}
+  .field input:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
   .hint{font-size:11px;color:var(--ink-dim);margin-top:16px;}
 
   button{
-    font-family:'Space Grotesk',sans-serif;
+    font-family:'Baloo 2',sans-serif;
     font-weight:700;
     font-size:13px;
     letter-spacing:0.4px;
     text-transform:uppercase;
-    background:var(--ink);
-    color:var(--bg);
+    background:linear-gradient(100deg, var(--higlobe), var(--techfx));
+    color:#06121a;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     padding:12px 20px;
     cursor:pointer;
     margin-top:16px;
+    box-shadow:0 0 18px rgba(79,195,255,0.25), 0 0 12px rgba(57,229,157,0.18);
   }
-  button:hover{opacity:0.88;}
+  button:hover{opacity:0.9;}
   button.ghost{
     background:transparent;
     color:var(--ink-dim);
@@ -136,9 +155,10 @@
     font-size:11px;
     padding:8px 14px;
     margin-top:0;
+    box-shadow:none;
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
-  button:disabled{opacity:0.5;cursor:default;}
+  button:disabled{opacity:0.5;cursor:default;box-shadow:none;}
 
   .results{display:flex;flex-direction:column;gap:10px;}
   .row{
@@ -148,16 +168,16 @@
     gap:14px;
     background:var(--panel-hi);
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:10px;
     padding:12px 14px;
   }
-  .row.best{border-color:var(--win);}
+  .row.best{border-color:var(--win);box-shadow:0 0 16px rgba(57,229,157,0.18);}
   .row .bar{height:100%;border-radius:3px;}
   .row .label{font-size:13px;}
   .row .label .small{display:block;color:var(--ink-dim);font-size:11px;margin-top:2px;}
   .row .vet{font-size:18px;font-weight:600;text-align:right;}
   .row .badge{
-    font-family:'Space Grotesk',sans-serif;
+    font-family:'Baloo 2',sans-serif;
     font-size:10px;
     letter-spacing:0.6px;
     text-transform:uppercase;
@@ -210,7 +230,7 @@
     background:var(--panel);border:1px solid var(--line);border-radius:12px;
     padding:24px;max-width:420px;width:100%;
   }
-  .modal h2{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 10px;}
+  .modal h2{font-family:'Baloo 2',sans-serif;font-size:17px;margin:0 0 10px;font-weight:700;}
   .modal p{font-size:12px;color:var(--ink-dim);line-height:1.5;margin:0 0 16px;}
   .modal input{
     width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
