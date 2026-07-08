@@ -2,43 +2,515 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cotaê</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotaê — Comparador de VET</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  :root{
+    --bg: #0a0e15;
+    --panel: #10151d;
+    --panel-hi: #171e28;
+    --line: #232c38;
+    --ink: #edf2f7;
+    --ink-dim: #7c8ba0;
+    --techfx: #4fc3ff;
+    --higlobe: #39e59d;
+    --win: #39e59d;
+    --err: #e0666f;
+    --warn: #e0a458;
+  }
+  *{box-sizing:border-box;}
   body{
     margin:0;
     min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     background:
       radial-gradient(ellipse 700px 500px at 15% -5%, rgba(79,195,255,0.14), transparent 60%),
       radial-gradient(ellipse 700px 500px at 90% 15%, rgba(57,229,157,0.10), transparent 60%),
-      #0a0e15;
-    color:#edf2f7;
+      var(--bg);
+    color:var(--ink);
     font-family:'IBM Plex Mono', monospace;
-    text-align:center;
-    padding:20px;
+    padding:28px 18px 40px;
+    padding-top:max(28px, calc(env(safe-area-inset-top, 0px) + 24px));
   }
+  .wrap{max-width:780px;margin:0 auto;}
+  .top-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
   h1{
     font-family:'Baloo 2',sans-serif;
-    font-size:40px;
+    font-size:32px;
+    font-weight:700;
+    margin:0;
+    line-height:1.1;
     text-transform:lowercase;
-    background:linear-gradient(100deg, #39e59d 0%, #4fc3ff 75%);
+    background:linear-gradient(100deg, var(--higlobe) 0%, var(--techfx) 75%);
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
-    margin:0 0 12px;
+    filter:drop-shadow(0 0 14px rgba(79,195,255,0.35)) drop-shadow(0 0 8px rgba(57,229,157,0.25));
+    width:fit-content;
   }
-  p{color:#7c8ba0;font-size:14px;max-width:420px;line-height:1.6;margin:0 auto;}
+  .alpha-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    background:var(--panel-hi);
+    color:var(--ink-dim);
+    border:1px solid var(--line);
+    padding:3px 9px;
+    border-radius:20px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin:6px 0 18px;
+  }
+
+  .warning-banner{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(224,164,88,0.1);
+    border:1px solid rgba(224,164,88,0.3);
+    color:var(--warn);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:12px;
+    margin-bottom:20px;
+  }
+  .warning-banner svg{flex:none;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .panel-title{
+    font-family:'Baloo 2',sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--ink-dim);
+    margin:0 0 16px;
+    font-weight:600;
+  }
+
+  .example-card{
+    background:var(--panel-hi);
+    border:1px dashed var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:16px;
+  }
+  .example-card p.t{color:var(--ink);font-weight:600;margin:0 0 8px;font-family:'Baloo 2',sans-serif;font-size:13px;}
+  .example-list{margin:0 0 10px;padding-left:18px;}
+  .example-list li{font-size:12px;color:var(--ink-dim);line-height:1.7;}
+  .example-result{
+    margin:0;font-size:13px;color:var(--win);font-weight:600;
+    display:flex;align-items:center;gap:6px;
+  }
+
+  .info{
+    position:relative;
+    width:13px;height:13px;border-radius:50%;
+    border:1px solid var(--ink-dim);
+    color:var(--ink-dim);
+    font-size:9px;line-height:11px;text-align:center;
+    cursor:pointer;flex:none;
+    background:none;
+    padding:0;
+  }
+  .info .bubble{
+    display:none;
+    position:absolute;
+    bottom:140%;left:50%;
+    transform:translateX(-50%);
+    width:190px;
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:11px;
+    line-height:1.5;
+    color:var(--ink);
+    text-align:left;
+    white-space:normal;
+    z-index:10;
+    box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  }
+  .info.open .bubble{display:block;}
+
+  .offer-card{
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .offer-grid{
+    display:grid;
+    grid-template-columns: 1fr 90px 110px auto auto;
+    gap:10px;
+    align-items:end;
+  }
+  .offer-field label{
+    display:flex;align-items:center;gap:4px;
+    font-size:11px;color:var(--ink-dim);margin-bottom:6px;
+  }
+  .offer-field input{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:9px 10px;
+    outline:none;
+  }
+  .offer-field input:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
+  .mini-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    border-radius:6px;
+    width:34px;height:34px;
+    font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+    padding:0;cursor:pointer;flex:none;
+  }
+  .mini-btn:hover{color:var(--ink);border-color:var(--ink-dim);}
+  .mini-btn.danger:hover{color:var(--err);border-color:var(--err);}
+
+  button{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+    background:linear-gradient(100deg, var(--higlobe), var(--techfx));
+    color:#06121a;
+    border:none;
+    border-radius:8px;
+    padding:12px 20px;
+    cursor:pointer;
+    box-shadow:0 0 18px rgba(79,195,255,0.2), 0 0 12px rgba(57,229,157,0.15);
+  }
+  button:hover{opacity:0.9;}
+  button.ghost{
+    background:transparent;
+    color:var(--ink-dim);
+    border:1px solid var(--line);
+    font-size:11px;
+    padding:8px 14px;
+    box-shadow:none;
+  }
+  button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
+
+  .results{display:flex;flex-direction:column;gap:10px;}
+  .row{
+    display:grid;
+    grid-template-columns: 12px 1fr auto auto;
+    align-items:center;
+    gap:14px;
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+  }
+  .row.best{border-color:var(--win);box-shadow:0 0 16px rgba(57,229,157,0.18);}
+  .row .bar{height:100%;border-radius:3px;}
+  .row .label{font-size:13px;}
+  .row .label .small{display:block;color:var(--ink-dim);font-size:11px;margin-top:2px;}
+  .row .vet{font-size:18px;font-weight:600;text-align:right;}
+  .row .badge{
+    font-family:'Baloo 2',sans-serif;
+    font-size:10px;letter-spacing:0.6px;text-transform:uppercase;
+    color:var(--win);text-align:right;min-width:52px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead th{
+    text-align:left;color:var(--ink-dim);font-weight:500;font-size:11px;
+    text-transform:uppercase;letter-spacing:0.5px;
+    padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  tbody td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tbody tr:hover{background:var(--panel-hi);}
+  .best-cell{color:var(--win);font-weight:600;}
+  .empty{color:var(--ink-dim);font-size:13px;padding:20px 0;text-align:center;}
+  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .head-row .panel-title{margin:0;}
+  .scroll{overflow-x:auto;}
+
+  footer{
+    border-top:1px solid var(--line);
+    margin-top:30px;
+    padding-top:16px;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  footer p{font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
+  footer a{color:var(--techfx);text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
-  <div>
+<div class="wrap">
+  <div class="top-row">
     <h1>cotaê</h1>
-    <p>A versão pública está a caminho. Volte em breve.</p>
+    <span class="alpha-badge">alpha</span>
   </div>
+  <p class="eyebrow">Comparador de VET</p>
+
+  <div class="warning-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+    <span>Nada é salvo. Os dados somem se a aba for fechada.</span>
+  </div>
+
+  <div class="panel">
+    <p class="panel-title">Ofertas</p>
+    <div id="exampleCard" class="example-card" style="display:none;">
+      <p class="t">Como funciona</p>
+      <ul class="example-list">
+        <li>Nome da oferta -- ex: Wise</li>
+        <li>Spread -- a taxa cobrada, ex: 0,5%</li>
+        <li>Cotação -- o valor oferecido agora, ex: 5,42</li>
+      </ul>
+      <p class="example-result"><i>→</i> VET calculado: 5,3929</p>
+    </div>
+    <div id="offersList"></div>
+    <button class="ghost" id="addOfferBtn" style="margin-top:4px;">+ Nova oferta</button>
+  </div>
+
+  <button id="calcBtn" style="width:100%;margin-bottom:20px;">Calcular VET</button>
+
+  <div class="panel">
+    <p class="panel-title">Resultado desta consulta</p>
+    <div class="results" id="results">
+      <p class="empty">Cadastre ao menos uma oferta e clique em "Calcular VET".</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="head-row">
+      <p class="panel-title">Histórico desta sessão</p>
+      <button class="ghost" id="clearBtn">Limpar histórico</button>
+    </div>
+    <div class="scroll">
+      <table id="historyTable">
+        <thead><tr id="historyHeadRow"><th>Hora</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <p class="empty" id="historyEmpty">Nenhuma consulta ainda.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>Os dados desta sessão serão apagados ao fechar a aba.</p>
+    <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026</p>
+    <p><a href="mailto:CONTATO_PENDENTE">Contato</a> · <a href="privacidade.html">Privacidade</a></p>
+  </footer>
+</div>
+
+<script>
+const STORAGE_KEY = 'cotae-public-session';
+const OFFER_COLORS = ['#4fc3ff', '#39e59d', '#e0a458', '#c084fc', '#f472b6', '#facc15'];
+
+let offers = [];
+let history = [];
+
+const offersListEl = document.getElementById('offersList');
+const exampleCard = document.getElementById('exampleCard');
+const resultsEl = document.getElementById('results');
+const historyHeadRow = document.getElementById('historyHeadRow');
+const historyBody = document.getElementById('historyBody');
+const historyEmpty = document.getElementById('historyEmpty');
+
+function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
+function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
+function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
+function computeVET(quote, spread){ return quote * (1 - spread); }
+
+function loadSession(){
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed || { offers: [], history: [] };
+  } catch (err) {
+    return { offers: [], history: [] };
+  }
+}
+
+function saveSession(){
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ offers, history }));
+}
+
+function renderOffers(){
+  exampleCard.style.display = offers.length === 0 ? 'block' : 'none';
+
+  offersListEl.innerHTML = offers.map((o, i) => `
+    <div class="offer-card" data-id="${o.id}">
+      <div class="offer-grid">
+        <div class="offer-field">
+          <label>Nome</label>
+          <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
+        </div>
+        <div class="offer-field">
+          <label>Spread <span class="info" data-tip="Taxa que a plataforma aplica sobre a cotação">i<span class="bubble">Taxa que a plataforma aplica sobre a cotação</span></span></label>
+          <input type="number" step="0.01" class="spread-input" value="${o.spread != null ? o.spread * 100 : ''}" placeholder="0,5">
+        </div>
+        <div class="offer-field">
+          <label>Cotação <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
+          <input type="number" step="0.0001" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
+        </div>
+        <button class="mini-btn duplicate-btn" title="Duplicar">⧉</button>
+        <button class="mini-btn danger remove-btn" title="Remover">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  offersListEl.querySelectorAll('.info').forEach(info => {
+    info.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = info.classList.contains('open');
+      document.querySelectorAll('.info.open').forEach(el => el.classList.remove('open'));
+      if (!wasOpen) info.classList.add('open');
+    });
+  });
+
+  offersListEl.querySelectorAll('.offer-card').forEach(card => {
+    const id = card.dataset.id;
+    const offer = offers.find(o => o.id === id);
+
+    card.querySelector('.name-input').addEventListener('input', e => {
+      offer.name = e.target.value;
+      saveSession();
+    });
+    card.querySelector('.spread-input').addEventListener('input', e => {
+      const pct = parseFloat(e.target.value);
+      offer.spread = isNaN(pct) ? null : pct / 100;
+      saveSession();
+    });
+    card.querySelector('.quote-input').addEventListener('input', e => {
+      const q = parseFloat(e.target.value);
+      offer.quote = isNaN(q) ? null : q;
+      saveSession();
+    });
+    card.querySelector('.duplicate-btn').addEventListener('click', () => {
+      const idx = offers.findIndex(o => o.id === id);
+      const copy = { ...offer, id: uid(), name: (offer.name || 'Oferta') + ' (cópia)' };
+      offers.splice(idx + 1, 0, copy);
+      saveSession();
+      renderOffers();
+    });
+    card.querySelector('.remove-btn').addEventListener('click', () => {
+      offers = offers.filter(o => o.id !== id);
+      saveSession();
+      renderOffers();
+    });
+  });
+}
+
+document.getElementById('addOfferBtn').addEventListener('click', () => {
+  offers.push({ id: uid(), name: '', spread: null, quote: null });
+  saveSession();
+  renderOffers();
+});
+
+function calculate(){
+  if (offers.length === 0){
+    resultsEl.innerHTML = '<p class="empty">Cadastre ao menos uma oferta pra calcular.</p>';
+    return;
+  }
+  const invalid = offers.some(o => !o.name || o.spread == null || o.quote == null || o.quote <= 0);
+  if (invalid){
+    resultsEl.innerHTML = '<p class="empty">Preencha nome, spread e cotação de todas as ofertas.</p>';
+    return;
+  }
+
+  const computed = offers.map(o => ({
+    name: o.name,
+    quote: o.quote,
+    spread: o.spread,
+    vet: computeVET(o.quote, o.spread)
+  }));
+
+  const maxVet = Math.max(...computed.map(v => v.vet));
+
+  resultsEl.innerHTML = computed.map((v, i) => {
+    const isBest = v.vet === maxVet;
+    return `
+      <div class="row ${isBest ? 'best' : ''}">
+        <div class="bar" style="background:${offerColor(i)};width:4px;height:28px;"></div>
+        <div class="label">${v.name}<span class="small">spread ${(v.spread * 100).toLocaleString('pt-BR')}%</span></div>
+        <div class="vet">${fmt(v.vet)}</div>
+        <div class="badge">${isBest ? '★ melhor' : ''}</div>
+      </div>
+    `;
+  }).join('');
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const best = computed.find(v => v.vet === maxVet).name;
+
+  history.unshift({ date: dateStr, time: timeStr, offers: computed, best });
+  saveSession();
+  renderHistory();
+}
+
+function renderHistory(){
+  historyHeadRow.innerHTML = `
+    <th>Hora</th>
+    ${offers.map(o => `<th>${o.name || 'Oferta'}</th>`).join('')}
+    <th>Melhor</th>
+  `;
+
+  if (history.length === 0){
+    historyEmpty.style.display = 'block';
+    historyBody.innerHTML = '';
+    return;
+  }
+  historyEmpty.style.display = 'none';
+
+  historyBody.innerHTML = history.map(entry => {
+    const cells = offers.map(o => {
+      const match = entry.offers.find(v => v.name === o.name);
+      const isBest = match && match.name === entry.best;
+      return `<td class="${isBest ? 'best-cell' : ''}">${match ? fmt(match.vet) : '—'}</td>`;
+    }).join('');
+    return `
+      <tr>
+        <td>${entry.time}</td>
+        ${cells}
+        <td class="best-cell">${entry.best}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.getElementById('calcBtn').addEventListener('click', calculate);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  history = [];
+  saveSession();
+  renderHistory();
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.info.open').forEach(el => el.classList.remove('open'));
+});
+
+// --- Inicialização ---
+const session = loadSession();
+offers = session.offers || [];
+history = session.history || [];
+renderOffers();
+renderHistory();
+</script>
 </body>
 </html>
