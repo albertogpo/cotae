@@ -1,4 +1,4 @@
-# cotaê
+# Cotaê
 
 Comparador de VET (Valor Efetivo de Troca) entre ofertas de câmbio — descubra em segundos qual oferta vale mais na hora de trocar moeda.
 
@@ -6,7 +6,7 @@ Comparador de VET (Valor Efetivo de Troca) entre ofertas de câmbio — descubra
 
 ## O que é
 
-Quem recebe em moeda estrangeira (freelancers, PJs, quem viaja) frequentemente compara mais de uma plataforma de câmbio antes de decidir onde trocar. Cada plataforma cobra uma taxa (spread) diferente sobre a cotação — o **cotaê** calcula o valor efetivo de cada oferta e mostra qual é a mais vantajosa, na hora.
+Quem recebe em moeda estrangeira (freelancers, PJs, quem viaja) frequentemente compara mais de uma plataforma de câmbio antes de decidir onde trocar. Cada plataforma cobra uma taxa (spread) diferente sobre a cotação — o **Cotaê** calcula o valor efetivo de cada oferta e mostra qual é a mais vantajosa, na hora.
 
 Fórmula usada: o valor efetivo é a cotação informada, descontada a taxa da oferta.
 
