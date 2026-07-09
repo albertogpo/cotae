@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cotaê — Comparador de VET</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/cotae-icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/cotae-icon-192.png">
+<link rel="apple-touch-icon" href="icons/cotae-icon-192.png">
 
 <script data-goatcounter="https://cotae.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
@@ -157,7 +160,7 @@
   }
   .offer-grid{
     display:grid;
-    grid-template-columns: 1fr 90px 110px auto auto;
+    grid-template-columns: 1fr 110px 90px auto auto;
     gap:10px;
     align-items:end;
   }
@@ -215,6 +218,19 @@
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
 
+  .primary-action{
+    width:100%;
+    margin-bottom:20px;
+  }
+  @media (min-width: 640px){
+    .primary-action{
+      width:auto;
+      display:block;
+      margin-left:auto;
+      margin-right:0;
+    }
+  }
+
   .results{display:flex;flex-direction:column;gap:10px;}
   .row{
     display:grid;
@@ -237,19 +253,44 @@
     color:var(--win);text-align:right;min-width:52px;
   }
 
-  table{width:100%;border-collapse:collapse;font-size:12px;}
-  thead th{
-    text-align:left;color:var(--ink-dim);font-weight:500;font-size:11px;
-    text-transform:uppercase;letter-spacing:0.5px;
-    padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;
+  .history-card{
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:10px;
   }
-  tbody td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap;}
-  tbody tr:hover{background:var(--panel-hi);}
-  .best-cell{color:var(--win);font-weight:600;}
+  .history-card .datetime{
+    font-size:11px;color:var(--ink-dim);margin:0 0 10px;
+  }
+  .history-offer-row{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:8px;
+  }
+  .history-offer-row.best{
+    background:var(--panel);
+    border:1px solid var(--win);
+    box-shadow:0 0 12px rgba(57,229,157,0.15);
+    margin-bottom:4px;
+  }
+  .history-offer-row .name{
+    font-size:13px;color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    max-width:70%;
+  }
+  .history-offer-row.best .name{color:var(--ink);}
+  .history-offer-row:not(.best) .name{color:var(--ink-dim);}
+  .history-offer-row .star{color:var(--win);font-size:10px;margin-left:4px;flex:none;}
+  .history-offer-row .vet{
+    font-size:14px;font-weight:600;color:var(--ink);flex:none;
+  }
+  .history-offer-row:not(.best) .vet{font-weight:400;color:var(--ink-dim);}
+
   .empty{color:var(--ink-dim);font-size:13px;padding:20px 0;text-align:center;}
   .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
   .head-row .panel-title{margin:0;}
-  .scroll{overflow-x:auto;}
 
   footer{
     border-top:1px solid var(--line);
@@ -260,6 +301,7 @@
   footer p{font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
   footer a{color:var(--techfx);text-decoration:none;}
   footer a:hover{text-decoration:underline;}
+#historyList{max-width:480px;margin:0 auto;}
 </style>
 </head>
 <body>
@@ -290,7 +332,7 @@
     <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;">+ Nova oferta</button>
   </div>
 
-  <button id="calcBtn" data-goatcounter-click="calculo_realizado" style="width:100%;margin-bottom:20px;">Calcular VET</button>
+  <button id="calcBtn" data-goatcounter-click="calculo_realizado" class="primary-action">Calcular VET</button>
 
   <div class="panel">
     <p class="panel-title">Resultado desta consulta</p>
@@ -304,13 +346,8 @@
       <p class="panel-title">Histórico desta sessão</p>
       <button class="ghost" id="clearBtn" data-goatcounter-click="historico_limpo">Limpar histórico</button>
     </div>
-    <div class="scroll">
-      <table id="historyTable">
-        <thead><tr id="historyHeadRow"><th>Hora</th></tr></thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-      <p class="empty" id="historyEmpty">Nenhuma consulta ainda.</p>
-    </div>
+    <div id="historyList"></div>
+    <p class="empty" id="historyEmpty">Nenhuma consulta ainda.</p>
   </div>
 
   <footer>
@@ -330,8 +367,7 @@ let history = [];
 const offersListEl = document.getElementById('offersList');
 const exampleCard = document.getElementById('exampleCard');
 const resultsEl = document.getElementById('results');
-const historyHeadRow = document.getElementById('historyHeadRow');
-const historyBody = document.getElementById('historyBody');
+const historyList = document.getElementById('historyList');
 const historyEmpty = document.getElementById('historyEmpty');
 
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
@@ -364,12 +400,12 @@ function renderOffers(){
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
         <div class="offer-field">
-          <label>Spread <span class="info" data-tip="Taxa que a plataforma aplica sobre a cotação">i<span class="bubble">Taxa que a plataforma aplica sobre a cotação</span></span></label>
-          <input type="number" step="0.01" class="spread-input" value="${o.spread != null ? o.spread * 100 : ''}" placeholder="0,5">
-        </div>
-        <div class="offer-field">
           <label>Cotação <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
           <input type="number" step="0.0001" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
+        </div>
+        <div class="offer-field">
+          <label>Spread <span class="info" data-tip="Taxa que a plataforma aplica sobre a cotação">i<span class="bubble">Taxa que a plataforma aplica sobre a cotação</span></span></label>
+          <input type="number" step="0.01" class="spread-input" value="${o.spread != null ? o.spread * 100 : ''}" placeholder="0,5">
         </div>
         <button class="mini-btn duplicate-btn" data-goatcounter-click="oferta_duplicada" title="Duplicar">⧉</button>
         <button class="mini-btn danger remove-btn" data-goatcounter-click="oferta_removida" title="Remover">✕</button>
@@ -468,32 +504,36 @@ function calculate(){
   renderHistory();
 }
 
-function renderHistory(){
-  historyHeadRow.innerHTML = `
-    <th>Hora</th>
-    ${offers.map(o => `<th>${o.name || 'Oferta'}</th>`).join('')}
-    <th>Melhor</th>
-  `;
+function escapeHtml(str){
+  return (str || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
 
+function renderHistory(){
   if (history.length === 0){
     historyEmpty.style.display = 'block';
-    historyBody.innerHTML = '';
+    historyList.innerHTML = '';
     return;
   }
   historyEmpty.style.display = 'none';
 
-  historyBody.innerHTML = history.map(entry => {
-    const cells = offers.map(o => {
-      const match = entry.offers.find(v => v.name === o.name);
-      const isBest = match && match.name === entry.best;
-      return `<td class="${isBest ? 'best-cell' : ''}">${match ? fmt(match.vet) : '—'}</td>`;
+  historyList.innerHTML = history.map(entry => {
+    const sorted = [...entry.offers].sort((a, b) => b.vet - a.vet);
+    const rows = sorted.map(o => {
+      const isBest = o.name === entry.best;
+      return `
+        <div class="history-offer-row ${isBest ? 'best' : ''}">
+          <span class="name">${escapeHtml(o.name)}${isBest ? '<span class="star">★</span>' : ''}</span>
+          <span class="vet">${fmt(o.vet)}</span>
+        </div>
+      `;
     }).join('');
     return `
-      <tr>
-        <td>${entry.time}</td>
-        ${cells}
-        <td class="best-cell">${entry.best}</td>
-      </tr>
+      <div class="history-card">
+        <p class="datetime">${entry.date || ''} ${entry.time}</p>
+        ${rows}
+      </div>
     `;
   }).join('');
 }
