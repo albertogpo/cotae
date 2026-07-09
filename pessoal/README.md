@@ -62,7 +62,7 @@ App estático, sem backend. Precisa estar servido em `https://` (não `file://`)
 
 - [x] **Passo 0** — comparador com ofertas fixas (uso pessoal).
 - [x] **Passo 1** — ofertas configuráveis, com histórico sincronizado via Dropbox.
-- [ ] **Passo 2** — versão pública, sem necessidade de conta: configurador de ofertas na tela inicial, histórico apenas da sessão.
+- [x] **Passo 2** — versão pública, sem necessidade de conta: configurador de ofertas na tela inicial, histórico apenas da sessão.
 - [ ] **Passo 3** — modelo com conta de usuário, múltiplas plataformas salvas e histórico persistente na nuvem.
 - [ ] **Passo 4** — modelo SaaS: sincronização entre dispositivos, relatórios de qual oferta foi mais vantajosa ao longo do tempo, suporte a múltiplas moedas.
 
