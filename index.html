@@ -289,6 +289,7 @@
   .history-offer-row:not(.best) .vet{font-weight:400;color:var(--ink-dim);}
 
   .empty{color:var(--ink-dim);font-size:13px;padding:20px 0;text-align:center;}
+  .empty.error{color:var(--err);}
   .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
   .head-row .panel-title{margin:0;}
 
@@ -396,7 +397,7 @@ function renderOffers(){
     <div class="offer-card" data-id="${o.id}">
       <div class="offer-grid">
         <div class="offer-field">
-          <label>Nome</label>
+          <label>Nome (opcional)</label>
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
         <div class="offer-field">
@@ -442,7 +443,7 @@ function renderOffers(){
     });
     card.querySelector('.duplicate-btn').addEventListener('click', () => {
       const idx = offers.findIndex(o => o.id === id);
-      const copy = { ...offer, id: uid(), name: (offer.name || 'Oferta') + ' (cópia)' };
+      const copy = { ...offer, id: uid(), name: offer.name ? offer.name + ' (cópia)' : '' };
       offers.splice(idx + 1, 0, copy);
       saveSession();
       renderOffers();
@@ -463,23 +464,31 @@ document.getElementById('addOfferBtn').addEventListener('click', () => {
 
 function calculate(){
   if (offers.length === 0){
-    resultsEl.innerHTML = '<p class="empty">Cadastre ao menos uma oferta pra calcular.</p>';
+    resultsEl.innerHTML = '<p class="empty error">Cadastre ao menos uma oferta pra calcular.</p>';
     window.goatcounter && window.goatcounter.count({ path: 'erro_sem_oferta', event: true });
     return;
   }
-  const invalid = offers.some(o => !o.name || o.spread == null || o.quote == null || o.quote <= 0);
+  const invalid = offers.some(o => o.spread == null || o.quote == null || o.quote <= 0);
   if (invalid){
-  resultsEl.innerHTML = '<p class="empty">Preencha nome, spread e cotação de todas as ofertas.</p>';
+  resultsEl.innerHTML = '<p class="empty error">Preencha spread e cotação de todas as ofertas.</p>';
   window.goatcounter && window.goatcounter.count({ path: 'erro_validacao', event: true });
   return;
   }
 
-  const computed = offers.map(o => ({
-    name: o.name,
-    quote: o.quote,
-    spread: o.spread,
-    vet: computeVET(o.quote, o.spread)
-  }));
+  let blankCount = 0;
+  const computed = offers.map(o => {
+    let displayName = (o.name || '').trim();
+    if (!displayName){
+      blankCount++;
+      displayName = 'Oferta ' + blankCount;
+    }
+    return {
+      name: displayName,
+      quote: o.quote,
+      spread: o.spread,
+      vet: computeVET(o.quote, o.spread)
+    };
+  });
 
   const maxVet = Math.max(...computed.map(v => v.vet));
 
