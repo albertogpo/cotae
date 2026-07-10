@@ -38,7 +38,7 @@ Todos os eventos são contagens agregadas e anônimas -- nenhum contém dado sob
 
 ## Por que "alpha"
 
-O app está em desenvolvimento contínuo — o modelo de dados, o design e as funcionalidades ainda podem mudar bastante. Feedback é bem-vindo através do contato na própria página.
+O app está em desenvolvimento contínuo — o modelo de dados, o design e as funcionalidades ainda podem mudar bastante. Feedback é bem-vindo por meio do contato na própria página.
 
 ## Stack
 
