@@ -11,6 +11,10 @@
 <script data-goatcounter="https://cotae.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -88,6 +92,40 @@
   }
   .warning-banner svg{flex:none;}
 
+  .account-banner{
+    display:none;
+    align-items:center;gap:10px;
+    background:rgba(57,229,157,0.1);
+    border:1px solid rgba(57,229,157,0.3);
+    color:var(--win);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:12px;
+    margin-bottom:20px;
+  }
+  .account-banner svg{flex:none;}
+  .account-banner .who{flex:1;}
+  .account-banner button{
+    background:none;border:1px solid rgba(57,229,157,0.3);color:var(--win);
+    box-shadow:none;padding:5px 10px;font-size:10px;
+  }
+
+  .account-link{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-dim);
+    background:none;
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:5px 12px;
+    box-shadow:none;
+    text-transform:none;
+    font-weight:400;
+    letter-spacing:normal;
+    margin-left:auto;
+  }
+  .account-link:hover{color:var(--ink);border-color:var(--ink-dim);opacity:1;}
+
   .panel{
     background:var(--panel);
     border:1px solid var(--line);
@@ -160,7 +198,7 @@
   }
   .offer-grid{
     display:grid;
-    grid-template-columns: 1fr 110px 90px auto auto;
+    grid-template-columns: 1fr 110px 90px auto auto auto;
     gap:10px;
     align-items:end;
   }
@@ -192,6 +230,7 @@
   }
   .mini-btn:hover{color:var(--ink);border-color:var(--ink-dim);}
   .mini-btn.danger:hover{color:var(--err);border-color:var(--err);}
+  .mini-btn.save-btn.saved{color:var(--win);border-color:var(--win);}
 
   button{
     font-family:'Baloo 2',sans-serif;
@@ -217,6 +256,37 @@
     box-shadow:none;
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
+
+  .upsell-card{
+    position:relative;
+    max-width:480px;
+    margin:16px auto 0;
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .upsell-card .dismiss{
+    position:absolute;top:12px;right:12px;
+    width:22px;height:22px;border-radius:6px;
+    border:1px solid var(--line);color:var(--ink-dim);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;cursor:pointer;background:none;
+  }
+  .upsell-card .dismiss:hover{color:var(--ink);border-color:var(--ink-dim);}
+  .upsell-card .title{
+    font-family:'Baloo 2',sans-serif;font-weight:700;font-size:16px;
+    color:var(--ink);margin:0 0 6px;padding-right:24px;
+  }
+  .upsell-card .subtitle{
+    font-size:13px;color:var(--ink-dim);line-height:1.6;margin:0 0 14px;
+  }
+  .upsell-card .fine-print{
+    font-size:10.5px;color:var(--ink-dim);margin:12px 0 0;line-height:1.5;
+  }
+  .upsell-card .fine-print a{color:var(--techfx);text-decoration:none;}
+  .upsell-card .fine-print a:hover{text-decoration:underline;}
 
   .primary-action{
     width:100%;
@@ -310,12 +380,19 @@
   <div class="top-row">
     <h1>cotaê</h1>
     <span class="alpha-badge">alpha</span>
+    <button class="account-link" id="loginLink">Entrar</button>
   </div>
   <p class="eyebrow">Comparador de VET</p>
 
-  <div class="warning-banner">
+  <div class="warning-banner" id="sessionWarningBanner">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
     <span>Seus dados ficam só no seu navegador, e somem ao fechar a aba.</span>
+  </div>
+
+  <div class="account-banner" id="accountBanner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+    <span class="who" id="accountWho"></span>
+    <button id="logoutBtn">Sair</button>
   </div>
 
   <div class="panel">
@@ -349,18 +426,42 @@
     </div>
     <div id="historyList"></div>
     <p class="empty" id="historyEmpty">Nenhuma consulta ainda.</p>
+
+    <div class="upsell-card" id="upsellCard" style="display:none;">
+      <button class="dismiss" id="upsellDismiss" title="Dispensar">✕</button>
+      <p class="title">Quer manter suas ofertas e seu histórico salvos?</p>
+      <p class="subtitle">Crie uma conta gratuita e leve suas comparações com você, em qualquer dispositivo.</p>
+      <button id="upsellCta" data-goatcounter-click="conta_criar_clicado">Criar conta gratuita</button>
+      <p class="fine-print">Levamos sua privacidade a sério — <a href="privacidade.html" data-goatcounter-click="privacidade_upsell">leia nosso termo</a>.</p>
+    </div>
   </div>
 
   <footer>
     <p>Os dados desta sessão serão apagados ao fechar a aba.</p>
     <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026</p>
-    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html">Privacidade</a></p>
+    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a></p>
   </footer>
 </div>
 
 <script>
 const STORAGE_KEY = 'cotae-public-session';
 const OFFER_COLORS = ['#4fc3ff', '#39e59d', '#e0a458', '#c084fc', '#f472b6', '#facc15'];
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBr1LIpBqsbQraop1as4xg56tuYZ7THGuk",
+  authDomain: "cotae-app.firebaseapp.com",
+  projectId: "cotae-app",
+  storageBucket: "cotae-app.firebasestorage.app",
+  messagingSenderId: "438418093203",
+  appId: "1:438418093203:web:694f0f11646df1d0a3c966"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+let currentUser = null;
+let hasMergedThisPageLoad = false;
 
 let offers = [];
 let history = [];
@@ -370,11 +471,125 @@ const exampleCard = document.getElementById('exampleCard');
 const resultsEl = document.getElementById('results');
 const historyList = document.getElementById('historyList');
 const historyEmpty = document.getElementById('historyEmpty');
+const upsellCard = document.getElementById('upsellCard');
+const upsellDismiss = document.getElementById('upsellDismiss');
+const upsellCta = document.getElementById('upsellCta');
+const loginLink = document.getElementById('loginLink');
+const sessionWarningBanner = document.getElementById('sessionWarningBanner');
+const accountBanner = document.getElementById('accountBanner');
+const accountWho = document.getElementById('accountWho');
+const logoutBtn = document.getElementById('logoutBtn');
+
+const UPSELL_KEY = 'cotae-upsell-state';
+const UPSELL_REAPPEAR_DAYS = 7;
+const UPSELL_REAPPEAR_CALCS = 5;
+
+function loadUpsellState(){
+  try {
+    const raw = localStorage.getItem(UPSELL_KEY);
+    return raw ? JSON.parse(raw) : null; // null = nunca dispensado
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveUpsellState(state){
+  localStorage.setItem(UPSELL_KEY, JSON.stringify(state));
+}
+
+function shouldShowUpsell(){
+  if (currentUser) return false;
+  if (history.length === 0) return false;
+
+  const state = loadUpsellState();
+  if (!state) return true; // nunca dispensado -> mostra
+
+  const daysSince = (Date.now() - state.dismissedAt) / (1000 * 60 * 60 * 24);
+  return daysSince >= UPSELL_REAPPEAR_DAYS || state.calcsSinceDismiss >= UPSELL_REAPPEAR_CALCS;
+}
+
+function renderUpsell(){
+  upsellCard.style.display = shouldShowUpsell() ? 'block' : 'none';
+}
+
+upsellDismiss.addEventListener('click', () => {
+  saveUpsellState({ dismissedAt: Date.now(), calcsSinceDismiss: 0 });
+  upsellCard.style.display = 'none';
+});
+
+upsellCta.addEventListener('click', signInWithGoogle);
 
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
 function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
+
+// --- Autenticação ---
+function signInWithGoogle(){
+  auth.signInWithPopup(googleProvider).catch(err => {
+    console.error('Erro no login:', err);
+    alert('Não foi possível entrar. Tente novamente.');
+  });
+}
+
+function signOutUser(){
+  auth.signOut();
+}
+
+loginLink.addEventListener('click', signInWithGoogle);
+logoutBtn.addEventListener('click', signOutUser);
+
+// --- Acesso ao Firestore (só usado quando currentUser existe) ---
+function offersCollection(){
+  return db.collection('usuarios').doc(currentUser.uid).collection('ofertas');
+}
+function historyCollection(){
+  return db.collection('usuarios').doc(currentUser.uid).collection('historico');
+}
+
+async function loadAccountOffers(){
+  const snapshot = await offersCollection().get();
+  return snapshot.docs.map(doc => ({
+    id: uid(),
+    savedId: doc.id,
+    name: doc.data().name || '',
+    spread: doc.data().spread,
+    quote: null
+  }));
+}
+
+async function loadAccountHistory(){
+  const snapshot = await historyCollection().orderBy('createdAt', 'desc').get();
+  return snapshot.docs.map(doc => ({ ...doc.data(), firestoreId: doc.id }));
+}
+
+async function saveOfferToFirestore(offer){
+  const payload = { name: offer.name || '', spread: offer.spread };
+  if (offer.savedId){
+    await offersCollection().doc(offer.savedId).set(payload);
+  } else {
+    const docRef = await offersCollection().add(payload);
+    offer.savedId = docRef.id;
+  }
+}
+
+async function writeHistoryEntryToFirestore(entry){
+  const createdAt = entry.createdAt || Date.now();
+  const payload = { date: entry.date, time: entry.time, offers: entry.offers, best: entry.best, createdAt };
+  const docRef = await historyCollection().add(payload);
+  return { ...payload, firestoreId: docRef.id };
+}
+
+async function clearAccountHistory(){
+  const snapshot = await historyCollection().get();
+  await Promise.all(snapshot.docs.map(doc => doc.ref.delete()));
+}
+
+function persistOffersState(){
+  // Logado: cada oferta só é salva de verdade quando a pessoa clica no
+  // ícone de salvar (💾) -- editar um campo não persiste sozinho.
+  if (!currentUser) saveSession();
+}
 
 function loadSession(){
   try {
@@ -408,6 +623,7 @@ function renderOffers(){
           <label>Spread <span class="info" data-tip="Taxa que a plataforma aplica sobre a cotação">i<span class="bubble">Taxa que a plataforma aplica sobre a cotação</span></span></label>
           <input type="number" step="0.01" class="spread-input" value="${o.spread != null ? o.spread * 100 : ''}" placeholder="0,5">
         </div>
+        ${currentUser ? `<button class="mini-btn save-btn ${o.savedId ? 'saved' : ''}" title="${o.savedId ? 'Atualizar oferta salva' : 'Salvar oferta'}">💾</button>` : ''}
         <button class="mini-btn duplicate-btn" data-goatcounter-click="oferta_duplicada" title="Duplicar">⧉</button>
         <button class="mini-btn danger remove-btn" data-goatcounter-click="oferta_removida" title="Remover">✕</button>
       </div>
@@ -429,36 +645,57 @@ function renderOffers(){
 
     card.querySelector('.name-input').addEventListener('input', e => {
       offer.name = e.target.value;
-      saveSession();
+      persistOffersState();
     });
     card.querySelector('.spread-input').addEventListener('input', e => {
       const pct = parseFloat(e.target.value);
       offer.spread = isNaN(pct) ? null : pct / 100;
-      saveSession();
+      persistOffersState();
     });
     card.querySelector('.quote-input').addEventListener('input', e => {
       const q = parseFloat(e.target.value);
       offer.quote = isNaN(q) ? null : q;
-      saveSession();
+      persistOffersState();
     });
     card.querySelector('.duplicate-btn').addEventListener('click', () => {
       const idx = offers.findIndex(o => o.id === id);
-      const copy = { ...offer, id: uid(), name: offer.name ? offer.name + ' (cópia)' : '' };
+      const copy = { ...offer, id: uid(), savedId: null, name: offer.name ? offer.name + ' (cópia)' : '' };
       offers.splice(idx + 1, 0, copy);
-      saveSession();
+      persistOffersState();
       renderOffers();
     });
     card.querySelector('.remove-btn').addEventListener('click', () => {
+      // Se a oferta já estava salva na conta, isso remove só da tela --
+      // não apaga da conta. Ela volta a aparecer no próximo login.
       offers = offers.filter(o => o.id !== id);
-      saveSession();
+      persistOffersState();
       renderOffers();
     });
+
+    const saveBtn = card.querySelector('.save-btn');
+    if (saveBtn){
+      saveBtn.addEventListener('click', async () => {
+        if (offer.spread == null){
+          alert('Preencha o spread antes de salvar esta oferta.');
+          return;
+        }
+        saveBtn.disabled = true;
+        try {
+          await saveOfferToFirestore(offer);
+          renderOffers();
+        } catch (err) {
+          console.error('Erro ao salvar oferta:', err);
+          alert('Não foi possível salvar a oferta agora. Tente de novo.');
+          saveBtn.disabled = false;
+        }
+      });
+    }
   });
 }
 
 document.getElementById('addOfferBtn').addEventListener('click', () => {
-  offers.push({ id: uid(), name: '', spread: null, quote: null });
-  saveSession();
+  offers.push({ id: uid(), savedId: null, name: '', spread: null, quote: null });
+  persistOffersState();
   renderOffers();
 });
 
@@ -509,9 +746,26 @@ function calculate(){
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const best = computed.find(v => v.vet === maxVet).name;
 
-  history.unshift({ date: dateStr, time: timeStr, offers: computed, best });
-  saveSession();
-  renderHistory();
+  const entry = { date: dateStr, time: timeStr, offers: computed, best };
+
+  if (currentUser){
+    history.unshift(entry); // otimista -- já mostra antes da escrita confirmar
+    renderHistory();
+    writeHistoryEntryToFirestore(entry).catch(err => {
+      console.error('Erro ao salvar consulta na conta:', err);
+    });
+  } else {
+    history.unshift(entry);
+    saveSession();
+    renderHistory();
+  }
+
+  const dismissState = loadUpsellState();
+  if (dismissState){
+    dismissState.calcsSinceDismiss = (dismissState.calcsSinceDismiss || 0) + 1;
+    saveUpsellState(dismissState);
+  }
+  renderUpsell();
 
   const n = computed.length;
   const band = n === 1 ? '1_oferta' : n === 2 ? '2_ofertas' : n === 3 ? '3_ofertas' : '4mais_ofertas';
@@ -553,10 +807,20 @@ function renderHistory(){
 }
 
 document.getElementById('calcBtn').addEventListener('click', calculate);
-document.getElementById('clearBtn').addEventListener('click', () => {
+document.getElementById('clearBtn').addEventListener('click', async () => {
+  if (currentUser){
+    try {
+      await clearAccountHistory();
+    } catch (err) {
+      console.error('Erro ao limpar histórico da conta:', err);
+      alert('Não foi possível limpar o histórico agora. Tente de novo.');
+      return;
+    }
+  }
   history = [];
-  saveSession();
+  if (!currentUser) saveSession();
   renderHistory();
+  renderUpsell();
 });
 
 document.addEventListener('click', () => {
@@ -569,6 +833,56 @@ offers = session.offers || [];
 history = session.history || [];
 renderOffers();
 renderHistory();
+renderUpsell();
+
+auth.onAuthStateChanged(async (user) => {
+  if (user){
+    currentUser = user;
+    sessionWarningBanner.style.display = 'none';
+    loginLink.style.display = 'none';
+    accountBanner.style.display = 'flex';
+    accountWho.textContent = user.displayName ? `Olá, ${user.displayName}` : user.email;
+
+    // Só migra o que estava na sessão na primeira vez que detectamos login
+    // nesta carga de página -- evita duplicar em re-disparos do listener.
+    const sessionOffersToMigrate = hasMergedThisPageLoad ? [] : offers.filter(o => !o.savedId);
+    const sessionHistoryToMigrate = hasMergedThisPageLoad ? [] : history.slice();
+
+    try {
+      const accountOffers = await loadAccountOffers();
+      const accountHistory = await loadAccountHistory();
+
+      offers = [...accountOffers, ...sessionOffersToMigrate];
+
+      const migratedHistory = [];
+      for (const entry of sessionHistoryToMigrate){
+        const saved = await writeHistoryEntryToFirestore(entry);
+        migratedHistory.push(saved);
+      }
+      history = [...migratedHistory, ...accountHistory].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      hasMergedThisPageLoad = true;
+    } catch (err) {
+      console.error('Erro ao carregar/migrar dados da conta:', err);
+    }
+
+    renderOffers();
+    renderHistory();
+    renderUpsell();
+  } else {
+    currentUser = null;
+    sessionWarningBanner.style.display = 'flex';
+    loginLink.style.display = 'inline-block';
+    accountBanner.style.display = 'none';
+
+    const s = loadSession();
+    offers = s.offers || [];
+    history = s.history || [];
+    renderOffers();
+    renderHistory();
+    renderUpsell();
+  }
+});
 </script>
 </body>
 </html>
