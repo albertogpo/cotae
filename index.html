@@ -95,19 +95,35 @@
   .account-banner{
     display:none;
     align-items:center;gap:10px;
-    background:rgba(57,229,157,0.1);
-    border:1px solid rgba(57,229,157,0.3);
-    color:var(--win);
     border-radius:10px;
     padding:10px 14px;
     font-size:12px;
     margin-bottom:20px;
   }
-  .account-banner svg{flex:none;}
   .account-banner .who{flex:1;}
-  .account-banner button{
-    background:none;border:1px solid rgba(57,229,157,0.3);color:var(--win);
-    box-shadow:none;padding:5px 10px;font-size:10px;
+  .account-banner .retry-btn{
+    background:none;border:1px solid rgba(224,102,111,0.4);color:var(--err);
+    box-shadow:none;padding:5px 10px;font-size:10.5px;
+  }
+  .account-banner.state-synced{background:rgba(57,229,157,0.1);border:1px solid rgba(57,229,157,0.3);}
+  .account-banner.state-synced .who{color:var(--win);}
+  .account-banner.state-syncing{background:rgba(79,195,255,0.1);border:1px solid rgba(79,195,255,0.3);}
+  .account-banner.state-syncing .who{color:var(--techfx);}
+  .account-banner.state-error{background:rgba(224,102,111,0.1);border:1px solid rgba(224,102,111,0.3);}
+  .account-banner.state-error .who{color:var(--err);}
+
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
+  .sync-dot.synced{background:var(--win);}
+  .sync-dot.syncing{background:var(--techfx);animation:pulse 1s infinite;}
+  .sync-dot.error{background:var(--err);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+  .user-avatar{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--panel-hi);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:600;color:var(--ink);
+    flex:none;margin-left:auto;
   }
 
   .account-link{
@@ -125,6 +141,21 @@
     margin-left:auto;
   }
   .account-link:hover{color:var(--ink);border-color:var(--ink-dim);opacity:1;}
+  #logoutBtn{
+    margin-left:16px;
+    border:none;
+    text-decoration:underline;
+    padding:0;
+    background:none;
+    box-shadow:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:400;
+    letter-spacing:normal;
+    text-transform:none;
+    color:var(--ink-dim);
+  }
+  #logoutBtn:hover{color:var(--ink);opacity:1;}
 
   .panel{
     background:var(--panel);
@@ -196,12 +227,16 @@
     padding:14px;
     margin-bottom:10px;
   }
-  .offer-grid{
-    display:grid;
-    grid-template-columns: 1fr 110px 90px auto auto auto;
+  .offer-fields{
+    display:flex;
+    flex-wrap:wrap;
     gap:10px;
-    align-items:end;
+    margin-bottom:10px;
   }
+  .offer-field{flex:1;}
+  .offer-field.name-field{flex:2;min-width:140px;}
+  .offer-field.quote-field{flex:0 0 110px;}
+  .offer-field.spread-field{flex:0 0 90px;}
   .offer-field label{
     display:flex;align-items:center;gap:4px;
     font-size:11px;color:var(--ink-dim);margin-bottom:6px;
@@ -218,6 +253,11 @@
     outline:none;
   }
   .offer-field input:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
+  .offer-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+  }
   .mini-btn{
     background:transparent;
     border:1px solid var(--line);
@@ -277,7 +317,7 @@
   .upsell-card .dismiss:hover{color:var(--ink);border-color:var(--ink-dim);}
   .upsell-card .title{
     font-family:'Baloo 2',sans-serif;font-weight:700;font-size:16px;
-    color:var(--ink);margin:0 0 6px;padding-right:24px;
+    color:var(--ink);margin:0 0 6px;padding-right:44px;
   }
   .upsell-card .subtitle{
     font-size:13px;color:var(--ink-dim);line-height:1.6;margin:0 0 14px;
@@ -381,18 +421,20 @@
     <h1>cotaê</h1>
     <span class="alpha-badge">alpha</span>
     <button class="account-link" id="loginLink">Entrar</button>
+    <span class="user-avatar" id="userAvatar" style="display:none;"></span>
+    <button id="logoutBtn" style="display:none;">Sair</button>
   </div>
   <p class="eyebrow">Comparador de VET</p>
 
   <div class="warning-banner" id="sessionWarningBanner">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-    <span>Seus dados ficam só no seu navegador, e somem ao fechar a aba.</span>
+    <span>Você não está logado. Os dados dessa sessão ficam só no seu navegador e somem ao fechar a aba, a não ser que crie uma conta.</span>
   </div>
 
   <div class="account-banner" id="accountBanner">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-    <span class="who" id="accountWho"></span>
-    <button id="logoutBtn">Sair</button>
+    <span class="sync-dot" id="syncDot"></span>
+    <span class="who" id="syncText"></span>
+    <button class="retry-btn" id="syncRetryBtn" style="display:none;">Tentar novamente</button>
   </div>
 
   <div class="panel">
@@ -477,8 +519,50 @@ const upsellCta = document.getElementById('upsellCta');
 const loginLink = document.getElementById('loginLink');
 const sessionWarningBanner = document.getElementById('sessionWarningBanner');
 const accountBanner = document.getElementById('accountBanner');
-const accountWho = document.getElementById('accountWho');
+const userAvatar = document.getElementById('userAvatar');
 const logoutBtn = document.getElementById('logoutBtn');
+const syncDot = document.getElementById('syncDot');
+const syncText = document.getElementById('syncText');
+const syncRetryBtn = document.getElementById('syncRetryBtn');
+
+let syncState = 'idle'; // 'idle' | 'syncing' | 'synced' | 'error'
+let lastSyncedAt = null;
+let lastFailedAction = null;
+
+function getInitials(user){
+  const name = (user.displayName || user.email || '').trim();
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function renderSyncStatus(){
+  accountBanner.classList.remove('state-synced', 'state-syncing', 'state-error');
+  syncRetryBtn.style.display = 'none';
+
+  if (syncState === 'syncing'){
+    accountBanner.classList.add('state-syncing');
+    syncDot.className = 'sync-dot syncing';
+    syncText.textContent = 'Sincronizando...';
+  } else if (syncState === 'error'){
+    accountBanner.classList.add('state-error');
+    syncDot.className = 'sync-dot error';
+    syncText.textContent = 'Falha ao sincronizar';
+    syncRetryBtn.style.display = 'inline-block';
+  } else {
+    accountBanner.classList.add('state-synced');
+    syncDot.className = 'sync-dot synced';
+    const timeStr = lastSyncedAt
+      ? new Date(lastSyncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+    syncText.textContent = timeStr ? `Sincronizado às ${timeStr}` : 'Sincronizado';
+  }
+}
+
+syncRetryBtn.addEventListener('click', () => {
+  if (lastFailedAction) lastFailedAction();
+});
 
 const UPSELL_KEY = 'cotae-upsell-state';
 const UPSELL_REAPPEAR_DAYS = 7;
@@ -610,20 +694,22 @@ function renderOffers(){
 
   offersListEl.innerHTML = offers.map((o, i) => `
     <div class="offer-card" data-id="${o.id}">
-      <div class="offer-grid">
-        <div class="offer-field">
+      <div class="offer-fields">
+        <div class="offer-field name-field">
           <label>Nome (opcional)</label>
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
-        <div class="offer-field">
-          <label>Cotação <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
+        <div class="offer-field quote-field">
+          <label>Cotação (R$) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
           <input type="number" step="0.0001" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
         </div>
-        <div class="offer-field">
-          <label>Spread <span class="info" data-tip="Taxa que a plataforma aplica sobre a cotação">i<span class="bubble">Taxa que a plataforma aplica sobre a cotação</span></span></label>
-          <input type="number" step="0.01" class="spread-input" value="${o.spread != null ? o.spread * 100 : ''}" placeholder="0,5">
+        <div class="offer-field spread-field">
+          <label>Spread (%) <span class="info" data-tip="Taxa que a plataforma aplica sobre a cotação">i<span class="bubble">Taxa que a plataforma aplica sobre a cotação</span></span></label>
+          <input type="number" step="0.01" inputmode="decimal" class="spread-input" value="${o.spread != null ? o.spread * 100 : ''}" placeholder="0,5">
         </div>
-        ${currentUser ? `<button class="mini-btn save-btn ${o.savedId ? 'saved' : ''}" title="${o.savedId ? 'Atualizar oferta salva' : 'Salvar oferta'}">💾</button>` : ''}
+      </div>
+      <div class="offer-actions">
+        ${currentUser ? `<button class="mini-btn save-btn ${o.savedId ? 'saved' : ''}" title="${o.savedId ? 'Atualizar oferta salva' : 'Salvar oferta'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>` : ''}
         <button class="mini-btn duplicate-btn" data-goatcounter-click="oferta_duplicada" title="Duplicar">⧉</button>
         <button class="mini-btn danger remove-btn" data-goatcounter-click="oferta_removida" title="Remover">✕</button>
       </div>
@@ -751,8 +837,32 @@ function calculate(){
   if (currentUser){
     history.unshift(entry); // otimista -- já mostra antes da escrita confirmar
     renderHistory();
-    writeHistoryEntryToFirestore(entry).catch(err => {
+
+    syncState = 'syncing';
+    renderSyncStatus();
+    writeHistoryEntryToFirestore(entry).then(() => {
+      syncState = 'synced';
+      lastSyncedAt = Date.now();
+      lastFailedAction = null;
+      renderSyncStatus();
+    }).catch(err => {
       console.error('Erro ao salvar consulta na conta:', err);
+      syncState = 'error';
+      lastFailedAction = () => {
+        syncState = 'syncing';
+        renderSyncStatus();
+        writeHistoryEntryToFirestore(entry).then(() => {
+          syncState = 'synced';
+          lastSyncedAt = Date.now();
+          lastFailedAction = null;
+          renderSyncStatus();
+        }).catch(err2 => {
+          console.error('Erro ao salvar consulta na conta (retry):', err2);
+          syncState = 'error';
+          renderSyncStatus();
+        });
+      };
+      renderSyncStatus();
     });
   } else {
     history.unshift(entry);
@@ -835,36 +945,56 @@ renderOffers();
 renderHistory();
 renderUpsell();
 
+async function loadAndMergeAccountData(user){
+  syncState = 'syncing';
+  renderSyncStatus();
+
+  // Só migra o que estava na sessão na primeira vez que detectamos login
+  // nesta carga de página -- evita duplicar em re-disparos do listener.
+  const sessionOffersToMigrate = hasMergedThisPageLoad ? [] : offers.filter(o => !o.savedId);
+  const sessionHistoryToMigrate = hasMergedThisPageLoad ? [] : history.slice();
+
+  try {
+    const accountOffers = await loadAccountOffers();
+    const accountHistory = await loadAccountHistory();
+
+    offers = [...accountOffers, ...sessionOffersToMigrate];
+
+    const migratedHistory = [];
+    for (const entry of sessionHistoryToMigrate){
+      const saved = await writeHistoryEntryToFirestore(entry);
+      migratedHistory.push(saved);
+    }
+    history = [...migratedHistory, ...accountHistory].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    hasMergedThisPageLoad = true;
+    syncState = 'synced';
+    lastSyncedAt = Date.now();
+    lastFailedAction = null;
+  } catch (err) {
+    console.error('Erro ao carregar/migrar dados da conta:', err);
+    syncState = 'error';
+    lastFailedAction = () => loadAndMergeAccountData(user).then(() => {
+      renderOffers();
+      renderHistory();
+      renderUpsell();
+    });
+  }
+
+  renderSyncStatus();
+}
+
 auth.onAuthStateChanged(async (user) => {
   if (user){
     currentUser = user;
     sessionWarningBanner.style.display = 'none';
     loginLink.style.display = 'none';
+    userAvatar.textContent = getInitials(user);
+    userAvatar.style.display = 'flex';
+    logoutBtn.style.display = 'inline-block';
     accountBanner.style.display = 'flex';
-    accountWho.textContent = user.displayName ? `Olá, ${user.displayName}` : user.email;
 
-    // Só migra o que estava na sessão na primeira vez que detectamos login
-    // nesta carga de página -- evita duplicar em re-disparos do listener.
-    const sessionOffersToMigrate = hasMergedThisPageLoad ? [] : offers.filter(o => !o.savedId);
-    const sessionHistoryToMigrate = hasMergedThisPageLoad ? [] : history.slice();
-
-    try {
-      const accountOffers = await loadAccountOffers();
-      const accountHistory = await loadAccountHistory();
-
-      offers = [...accountOffers, ...sessionOffersToMigrate];
-
-      const migratedHistory = [];
-      for (const entry of sessionHistoryToMigrate){
-        const saved = await writeHistoryEntryToFirestore(entry);
-        migratedHistory.push(saved);
-      }
-      history = [...migratedHistory, ...accountHistory].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-      hasMergedThisPageLoad = true;
-    } catch (err) {
-      console.error('Erro ao carregar/migrar dados da conta:', err);
-    }
+    await loadAndMergeAccountData(user);
 
     renderOffers();
     renderHistory();
@@ -873,7 +1003,12 @@ auth.onAuthStateChanged(async (user) => {
     currentUser = null;
     sessionWarningBanner.style.display = 'flex';
     loginLink.style.display = 'inline-block';
+    userAvatar.style.display = 'none';
+    logoutBtn.style.display = 'none';
     accountBanner.style.display = 'none';
+    syncState = 'idle';
+    lastSyncedAt = null;
+    lastFailedAction = null;
 
     const s = loadSession();
     offers = s.offers || [];
