@@ -1,12 +1,12 @@
 {
   "name": "Cotaê — Comparador de VET",
   "short_name": "Cotaê",
-  "description": "Compara VET entre TechFX e Higlobe em três cenários de spread.",
+  "description": "Compare o valor efetivo de câmbio entre suas ofertas.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#12151a",
-  "theme_color": "#12151a",
+  "background_color": "#0a0e15",
+  "theme_color": "#0a0e15",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "icons/cotae-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
