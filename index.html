@@ -364,6 +364,7 @@
   }
 
   .history-card{
+    position:relative;
     background:var(--panel-hi);
     border:1px solid var(--line);
     border-radius:12px;
@@ -371,7 +372,10 @@
     margin-bottom:10px;
   }
   .history-card .datetime{
-    font-size:11px;color:var(--ink-dim);margin:0 0 10px;
+    font-size:11px;color:var(--ink-dim);margin:0 34px 16px 0;
+  }
+  .history-delete-btn{
+    position:absolute;top:10px;right:10px;
   }
   .history-offer-row{
     display:flex;justify-content:space-between;align-items:center;
@@ -412,6 +416,41 @@
   footer p{font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
   footer a{color:var(--techfx);text-decoration:none;}
   footer a:hover{text-decoration:underline;}
+
+  .login-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.6);
+    z-index:40;
+  }
+
+  .modal-backdrop{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.6);
+    align-items:center;justify-content:center;
+    padding:20px;z-index:50;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:22px;max-width:360px;width:100%;
+  }
+  .modal .modal-title{font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:700;color:var(--ink);margin:0 0 10px;}
+  .modal .modal-message{font-size:12px;color:var(--ink-dim);line-height:1.6;margin:0 0 20px;}
+  .modal .modal-message strong{color:var(--ink);}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+  .modal-actions .danger-btn{
+    font-family:'Baloo 2',sans-serif;font-weight:700;font-size:12px;
+    text-transform:none;
+    color:var(--err);
+    background:rgba(224,102,111,0.1);
+    border:1px solid rgba(224,102,111,0.4);
+    box-shadow:none;
+    padding:8px 14px;
+    margin-top:0;
+  }
+  .modal-actions .danger-btn:hover{opacity:0.85;}
 #historyList{max-width:480px;margin:0 auto;}
 </style>
 </head>
@@ -422,7 +461,7 @@
     <span class="alpha-badge">alpha</span>
     <button class="account-link" id="loginLink">Entrar</button>
     <span class="user-avatar" id="userAvatar" style="display:none;"></span>
-    <button id="logoutBtn" style="display:none;">Sair</button>
+    <button id="logoutBtn" data-goatcounter-click="conta_sair_clicado" style="display:none;">Sair</button>
   </div>
   <p class="eyebrow">Comparador de VET</p>
 
@@ -434,7 +473,7 @@
   <div class="account-banner" id="accountBanner">
     <span class="sync-dot" id="syncDot"></span>
     <span class="who" id="syncText"></span>
-    <button class="retry-btn" id="syncRetryBtn" style="display:none;">Tentar novamente</button>
+    <button class="retry-btn" id="syncRetryBtn" data-goatcounter-click="sync_retry_clicado" style="display:none;">Tentar novamente</button>
   </div>
 
   <div class="panel">
@@ -483,6 +522,12 @@
     <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026</p>
     <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a></p>
   </footer>
+</div>
+
+<div class="login-overlay" id="loginOverlay"></div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalBox"></div>
 </div>
 
 <script>
@@ -603,18 +648,70 @@ upsellDismiss.addEventListener('click', () => {
 
 upsellCta.addEventListener('click', signInWithGoogle);
 
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalBox = document.getElementById('modalBox');
+
+function showConfirmModal({ title, message, confirmLabel, onConfirm }){
+  modalBox.innerHTML = `
+    <p class="modal-title">${title}</p>
+    <p class="modal-message">${message}</p>
+    <div class="modal-actions">
+      <button class="ghost" id="modalCancelBtn">Cancelar</button>
+      <button class="danger-btn" id="modalConfirmBtn">${confirmLabel}</button>
+    </div>
+  `;
+  modalBackdrop.classList.add('open');
+
+  const close = () => modalBackdrop.classList.remove('open');
+
+  document.getElementById('modalCancelBtn').addEventListener('click', close);
+  document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+    close();
+    onConfirm();
+  });
+}
+
+// Clicar fora do modal cancela -- vale para qualquer modal que usar este
+// componente genérico, agora e no futuro.
+modalBackdrop.addEventListener('click', (e) => {
+  if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
+});
+
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
 function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
 
 // --- Autenticação ---
-function signInWithGoogle(){
-  auth.signInWithPopup(googleProvider).catch(err => {
-    console.error('Erro no login:', err);
-    alert('Não foi possível entrar. Tente novamente.');
-  });
+const loginOverlay = document.getElementById('loginOverlay');
+
+function isMobileDevice(){
+  return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
 }
+
+function signInWithGoogle(){
+  if (isMobileDevice()){
+    // No celular, o popup normalmente vira uma aba nova mesmo (limitação dos
+    // navegadores móveis) -- o redirect é mais previsível: volta sozinho pra
+    // mesma aba ao terminar, sem exigir troca manual de aba.
+    auth.signInWithRedirect(googleProvider);
+    return;
+  }
+
+  loginOverlay.style.display = 'block';
+  auth.signInWithPopup(googleProvider)
+    .catch(err => {
+      console.error('Erro no login:', err);
+      alert('Não foi possível entrar. Tente novamente.');
+    })
+    .finally(() => {
+      loginOverlay.style.display = 'none';
+    });
+}
+
+auth.getRedirectResult().catch(err => {
+  console.error('Erro ao concluir login via redirect:', err);
+});
 
 function signOutUser(){
   auth.signOut();
@@ -769,6 +866,7 @@ function renderOffers(){
         try {
           await saveOfferToFirestore(offer);
           renderOffers();
+          window.goatcounter && window.goatcounter.count({ path: 'oferta_salva', event: true });
         } catch (err) {
           console.error('Erro ao salvar oferta:', err);
           alert('Não foi possível salvar a oferta agora. Tente de novo.');
@@ -896,7 +994,7 @@ function renderHistory(){
   }
   historyEmpty.style.display = 'none';
 
-  historyList.innerHTML = history.map(entry => {
+  historyList.innerHTML = history.map((entry, idx) => {
     const sorted = [...entry.offers].sort((a, b) => b.vet - a.vet);
     const rows = sorted.map(o => {
       const isBest = o.name === entry.best;
@@ -908,12 +1006,46 @@ function renderHistory(){
       `;
     }).join('');
     return `
-      <div class="history-card">
+      <div class="history-card" data-index="${idx}">
+        <button class="mini-btn danger history-delete-btn" title="Excluir consulta">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16z"/></svg>
+        </button>
         <p class="datetime">${entry.date || ''} ${entry.time}</p>
         ${rows}
       </div>
     `;
   }).join('');
+
+  historyList.querySelectorAll('.history-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.closest('.history-card').dataset.index, 10);
+      const entry = history[idx];
+      showConfirmModal({
+        title: 'Excluir esta consulta?',
+        message: `Essa ação é definitiva e não pode ser desfeita. A consulta de <strong>${entry.date || ''} às ${entry.time}</strong> será removida do seu histórico.`,
+        confirmLabel: 'Excluir',
+        onConfirm: () => deleteHistoryEntry(idx)
+      });
+    });
+  });
+}
+
+async function deleteHistoryEntry(idx){
+  const entry = history[idx];
+  if (currentUser && entry.firestoreId){
+    try {
+      await historyCollection().doc(entry.firestoreId).delete();
+    } catch (err) {
+      console.error('Erro ao excluir consulta da conta:', err);
+      alert('Não foi possível excluir agora. Tente de novo.');
+      return;
+    }
+  }
+  history.splice(idx, 1);
+  if (!currentUser) saveSession();
+  renderHistory();
+  renderUpsell();
+  window.goatcounter && window.goatcounter.count({ path: 'historico_excluido_individual', event: true });
 }
 
 document.getElementById('calcBtn').addEventListener('click', calculate);
@@ -986,6 +1118,7 @@ async function loadAndMergeAccountData(user){
 
 auth.onAuthStateChanged(async (user) => {
   if (user){
+    const isNewLogin = !currentUser;
     currentUser = user;
     sessionWarningBanner.style.display = 'none';
     loginLink.style.display = 'none';
@@ -995,6 +1128,10 @@ auth.onAuthStateChanged(async (user) => {
     accountBanner.style.display = 'flex';
 
     await loadAndMergeAccountData(user);
+
+    if (isNewLogin){
+      window.goatcounter && window.goatcounter.count({ path: 'conta_login_sucesso', event: true });
+    }
 
     renderOffers();
     renderHistory();
