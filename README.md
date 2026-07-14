@@ -13,11 +13,11 @@ Fórmula usada: o valor efetivo é a cotação informada, descontada a taxa da o
 ## Como usar
 
 1. Cadastre uma oferta: nome, taxa (spread) e a cotação do momento.
-2. Adicione quantas ofertas quiser comparar.
+2. Adicione quantas ofertas quiser comparar. Sugere-se ao menos duas.
 3. Clique em "Calcular VET" — a melhor oferta é destacada automaticamente.
-4. Cada cálculo fica num histórico, visível enquanto a aba estiver aberta.
+4. Cada cálculo fica num histórico, visível enquanto a aba estiver aberta, e salvo em histórico para usuários logados.
 
-Não é necessário criar conta. **Nada é salvo nem enviado a nenhum servidor** — os dados ficam só no seu navegador, durante a sessão, e somem ao fechar a aba. Veja o [aviso de privacidade](privacidade.html) para detalhes.
+Não é necessário criar conta. **Nada é salvo nem enviado a nenhum servidor** — os dados ficam só no seu navegador, durante a sessão, e somem ao fechar a aba. Veja o [aviso de privacidade](privacidade.html) para detalhes. Ao criar conta, é possível salvar e sincronizar entre dispositivos suas ofertas e histórico de comparações.
 
 ## Eventos rastreados (GoatCounter)
 
@@ -25,16 +25,24 @@ Não é necessário criar conta. **Nada é salvo nem enviado a nenhum servidor**
 |---|---|
 | `oferta_adicionada` | Clique em "+ Nova oferta" |
 | `oferta_duplicada` | Clique no botão de duplicar uma oferta |
-| `oferta_removida` | Clique no botão de remover uma oferta |
+| `oferta_removida` | Clique no botão de remover uma oferta da tela |
+| `oferta_salva` | Oferta salva/atualizada com sucesso na conta (💾) |
 | `erro_sem_oferta` | Clicou em "Calcular VET" sem nenhuma oferta cadastrada |
 | `erro_validacao` | Clicou em "Calcular VET" com ofertas incompletas ou inválidas |
 | `calculo_sucesso_1_oferta` | Cálculo bem-sucedido com 1 oferta |
 | `calculo_sucesso_2_ofertas` | Cálculo bem-sucedido com 2 ofertas |
 | `calculo_sucesso_3_ofertas` | Cálculo bem-sucedido com 3 ofertas |
 | `calculo_sucesso_4mais_ofertas` | Cálculo bem-sucedido com 4 ou mais ofertas |
-| `historico_limpo` | Clique em "Limpar histórico" |
+| `historico_limpo` | Clique em "Limpar histórico" (todo o histórico) |
+| `historico_excluido_individual` | Uma consulta específica excluída com sucesso |
+| `conta_criar_clicado` | Clique em "Criar conta gratuita" no card de upsell |
+| `conta_login_sucesso` | Login concluído com sucesso (só na transição de deslogado pra logado) |
+| `conta_sair_clicado` | Clique em "Sair" |
+| `sync_retry_clicado` | Clique em "Tentar novamente" após falha de sincronização |
+| `privacidade_upsell` | Clique em "leia nosso termo" dentro do card de upsell |
+| `privacidade_rodape` | Clique em "Privacidade" no rodapé |
 
-Todos os eventos são contagens agregadas e anônimas -- nenhum contém dado sobre o conteúdo das ofertas (nome, cotação ou spread).
+Todos os eventos são contagens agregadas e anônimas -- nenhum contém dado sobre o conteúdo das ofertas (nome, cotação, spread) ou identidade da conta.
 
 ## Por que "alpha"
 
