@@ -336,15 +336,29 @@
 
   .primary-action{
     width:100%;
-    margin-bottom:20px;
+    margin-bottom:8px;
+  }
+  .primary-action:disabled{
+    background:var(--panel-hi);
+    color:var(--ink-dim);
+    box-shadow:none;
+    cursor:not-allowed;
+    opacity:1;
+  }
+  .calc-hint{
+    font-size:11px;color:var(--ink-dim);margin:0 0 20px;text-align:center;
+  }
+  .skip-notice{
+    font-size:11px;color:var(--warn);margin:0 0 10px;
   }
   @media (min-width: 640px){
     .primary-action{
       width:auto;
       min-width: 240px;
       display:block;
-      margin: 20px auto;
+      margin: 20px auto 8px;
     }
+    .calc-hint{margin-bottom:20px;}
   }
 
   .results{display:flex;flex-direction:column;gap:10px;}
@@ -486,18 +500,19 @@
     <p class="panel-title">Ofertas</p>
     <div id="exampleCard" class="example-card" style="display:none;">
       <p class="t">Como funciona</p>
-      <ul class="example-list">
-        <li>Nome da oferta -- ex: Wise</li>
-        <li>Cotação -- o valor oferecido agora, ex: 5,42</li>
-        <li>Spread -- a taxa cobrada, ex: 0,5%</li>              
-      </ul>
-      <p class="example-result"><i>→</i> VET calculado: 5,3929</p>
+      <ol class="example-list">
+        <li>Dê um nome à oferta (opcional) -- ex: Wise</li>
+        <li>Informe a cotação do momento -- ex: 5,42</li>
+        <li>Informe o spread, a taxa cobrada -- ex: 0,5%</li>
+      </ol>
+      <p class="example-result"><i>→</i> Valor final (VET): 5,3929 -- quanto você efetivamente recebe, já descontada a taxa</p>
     </div>
     <div id="offersList"></div>
     <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;">+ Nova oferta</button>
   </div>
 
   <button id="calcBtn" class="primary-action">Calcular VET</button>
+  <p class="calc-hint" id="calcHint">Preencha cotação e spread de ao menos uma oferta.</p>
 
   <div class="panel">
     <p class="panel-title">Resultado desta consulta</p>
@@ -840,11 +855,13 @@ function renderOffers(){
       const pct = parseFloat(e.target.value);
       offer.spread = isNaN(pct) ? null : pct / 100;
       persistOffersState();
+      updateCalcButtonState();
     });
     card.querySelector('.quote-input').addEventListener('input', e => {
       const q = parseFloat(e.target.value);
       offer.quote = isNaN(q) ? null : q;
       persistOffersState();
+      updateCalcButtonState();
     });
     card.querySelector('.duplicate-btn').addEventListener('click', () => {
       const idx = offers.findIndex(o => o.id === id);
@@ -881,6 +898,8 @@ function renderOffers(){
       });
     }
   });
+
+  updateCalcButtonState();
 }
 
 document.getElementById('addOfferBtn').addEventListener('click', () => {
@@ -889,21 +908,36 @@ document.getElementById('addOfferBtn').addEventListener('click', () => {
   renderOffers();
 });
 
+function isOfferValid(o){
+  return o.quote != null && o.quote > 0 && o.spread != null;
+}
+
+function updateCalcButtonState(){
+  const validCount = offers.filter(isOfferValid).length;
+  const calcBtn = document.getElementById('calcBtn');
+  const calcHint = document.getElementById('calcHint');
+  calcBtn.disabled = validCount === 0;
+  calcHint.style.display = validCount === 0 ? 'block' : 'none';
+}
+
 function calculate(){
   if (offers.length === 0){
     resultsEl.innerHTML = '<p class="empty error">Cadastre ao menos uma oferta pra calcular.</p>';
     window.goatcounter && window.goatcounter.count({ path: 'erro_sem_oferta', event: true });
     return;
   }
-  const invalid = offers.some(o => o.spread == null || o.quote == null || o.quote <= 0);
-  if (invalid){
-  resultsEl.innerHTML = '<p class="empty error">Preencha spread e cotação de todas as ofertas.</p>';
-  window.goatcounter && window.goatcounter.count({ path: 'erro_validacao', event: true });
-  return;
+
+  const validOffers = offers.filter(isOfferValid);
+  const skippedCount = offers.length - validOffers.length;
+
+  if (validOffers.length === 0){
+    resultsEl.innerHTML = '<p class="empty error">Preencha spread e cotação de ao menos uma oferta.</p>';
+    window.goatcounter && window.goatcounter.count({ path: 'erro_validacao', event: true });
+    return;
   }
 
   let blankCount = 0;
-  const computed = offers.map(o => {
+  const computed = validOffers.map(o => {
     let displayName = (o.name || '').trim();
     if (!displayName){
       blankCount++;
@@ -919,7 +953,11 @@ function calculate(){
 
   const maxVet = Math.max(...computed.map(v => v.vet));
 
-  resultsEl.innerHTML = computed.map((v, i) => {
+  const skipNoticeHtml = skippedCount > 0
+    ? `<p class="skip-notice">${skippedCount} oferta${skippedCount > 1 ? 's' : ''} incompleta${skippedCount > 1 ? 's' : ''} ${skippedCount > 1 ? 'foram ignoradas' : 'foi ignorada'}.</p>`
+    : '';
+
+  resultsEl.innerHTML = skipNoticeHtml + computed.map((v, i) => {
     const isBest = v.vet === maxVet;
     return `
       <div class="row ${isBest ? 'best' : ''}">
