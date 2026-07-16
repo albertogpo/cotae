@@ -1,6 +1,6 @@
 # Cotaê
 
-Comparador de cotações de câmbio — descubra em segundos qual oferta vale mais na hora de trocar moeda, calculando o VET (Valor Efetivo de Troca) de cada uma.
+Comparador de cotações de câmbio — descubra em segundos qual oferta vale mais na hora de trocar moeda, calculando o VET (Valor Efetivo Total) de cada uma.
 
 > **Status: alpha.** Em desenvolvimento ativo, sujeito a mudanças.
 
