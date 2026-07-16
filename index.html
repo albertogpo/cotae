@@ -195,6 +195,9 @@
     margin:0;font-size:13px;color:var(--win);font-weight:600;
     display:flex;align-items:center;gap:6px;
   }
+  .example-note{
+    margin:8px 0 0;font-size:11px;color:var(--ink-dim);
+  }
 
   .info{
     position:relative;
@@ -336,7 +339,7 @@
 
   .primary-action{
     width:100%;
-    margin-bottom:8px;
+    margin-bottom:14px;
   }
   .primary-action:disabled{
     background:var(--panel-hi);
@@ -346,46 +349,83 @@
     opacity:1;
   }
   .calc-hint{
-    font-size:11px;color:var(--ink-dim);margin:0 0 20px;text-align:center;
+    font-size:11px;color:var(--ink-dim);margin:0;text-align:center;
+  }
+  .calc-error{
+    font-size:11px;color:var(--err);margin:0;text-align:center;
   }
   .skip-notice{
     font-size:11px;color:var(--warn);margin:0 0 10px;
   }
+
+  .amount-field{
+    border-top:1px solid var(--line);
+    padding-top:16px;
+    margin-top:6px;
+    margin-bottom:16px;
+  }
+  .amount-field label{
+    display:flex;align-items:center;gap:4px;
+    font-size:11px;color:var(--techfx);margin-bottom:8px;
+  }
+  .amount-field input{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:9px 10px;
+    outline:none;
+  }
+  .amount-field input:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
   @media (min-width: 640px){
     .primary-action{
       width:auto;
       min-width: 240px;
       display:block;
-      margin: 20px auto 8px;
+      margin: 20px auto 14px;
     }
-    .calc-hint{margin-bottom:20px;}
   }
 
   .results{display:flex;flex-direction:column;gap:10px;}
   .row{
-    display:grid;
-    grid-template-columns: 12px 1fr auto auto;
-    align-items:center;
+    display:flex;
     gap:14px;
     background:var(--panel-hi);
     border:1px solid var(--line);
     border-radius:10px;
     padding:12px 14px;
+    margin-bottom:8px;
   }
   .row.best{border-color:var(--win);box-shadow:0 0 16px rgba(57,229,157,0.18);}
-  .row .bar{height:100%;border-radius:3px;}
-  .row .label{font-size:13px;}
-  .row .label .small{display:block;color:var(--ink-dim);font-size:11px;margin-top:2px;}
-  .row .vet{font-size:18px;font-weight:600;text-align:right;}
-  .row .badge{
+  .row .bar{width:4px;border-radius:3px;flex:none;align-self:stretch;}
+  .row-left{flex:1;min-width:0;}
+  .row-top{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    margin-bottom:4px;
+  }
+  .row-top .name{
+    font-size:13px;color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .row-top .badge{
     font-family:'Baloo 2',sans-serif;
     font-size:10px;letter-spacing:0.6px;text-transform:uppercase;
-    color:var(--win);text-align:right;min-width:52px;
+    color:var(--win);flex:none;
+  }
+  .row-detail{font-size:11px;color:var(--ink-dim);margin-bottom:6px;}
+  .row-vet{font-size:15px;font-weight:600;color:var(--ink);}
+  .row-final{
+    font-size:19px;font-weight:700;color:var(--ink);
+    display:flex;align-items:center;flex:none;
+    text-align:right;
   }
 
   .history-card{
     position:relative;
-    background:var(--panel-hi);
+    background:var(--panel);
     border:1px solid var(--line);
     border-radius:12px;
     padding:14px;
@@ -397,30 +437,6 @@
   .history-delete-btn{
     position:absolute;top:10px;right:10px;
   }
-  .history-offer-row{
-    display:flex;justify-content:space-between;align-items:center;
-    gap:10px;
-    padding:8px 10px;
-    border-radius:8px;
-  }
-  .history-offer-row.best{
-    background:var(--panel);
-    border:1px solid var(--win);
-    box-shadow:0 0 12px rgba(57,229,157,0.15);
-    margin-bottom:4px;
-  }
-  .history-offer-row .name{
-    font-size:13px;color:var(--ink);
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    max-width:70%;
-  }
-  .history-offer-row.best .name{color:var(--ink);}
-  .history-offer-row:not(.best) .name{color:var(--ink-dim);}
-  .history-offer-row .star{color:var(--win);font-size:10px;margin-left:4px;flex:none;}
-  .history-offer-row .vet{
-    font-size:14px;font-weight:600;color:var(--ink);flex:none;
-  }
-  .history-offer-row:not(.best) .vet{font-weight:400;color:var(--ink-dim);}
 
   .empty{color:var(--ink-dim);font-size:13px;padding:20px 0;text-align:center;}
   .empty.error{color:var(--err);}
@@ -505,25 +521,25 @@
         <li>Informe a cotação do momento -- ex: 5,42</li>
         <li>Informe o spread, a taxa cobrada -- ex: 0,5%</li>
       </ol>
-      <p class="example-result"><i>→</i> Valor final (VET): 5,3929 -- quanto você efetivamente recebe, já descontada a taxa</p>
+      <p class="example-result"><i>→</i> VET: 5,3929 -- a cotação realmente aplicada na operação, já descontada a taxa</p>
+      <p class="example-note">Quer saber quanto vai receber? Informe também o valor que pretende converter.</p>
     </div>
     <div id="offersList"></div>
-    <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;">+ Nova oferta</button>
-  </div>
+    <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;margin-bottom:20px;">+ Nova oferta</button>
 
-  <button id="calcBtn" class="primary-action">Calcular VET</button>
-  <p class="calc-hint" id="calcHint">Preencha cotação e spread de ao menos uma oferta.</p>
-
-  <div class="panel">
-    <p class="panel-title">Resultado desta consulta</p>
-    <div class="results" id="results">
-      <p class="empty">Cadastre ao menos uma oferta e clique em "Calcular VET".</p>
+    <div class="amount-field">
+      <label for="amountInput">Quanto você vai converter? (opcional) <span class="info" id="amountInfo" data-tip="O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
+      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00">
     </div>
+
+    <button id="calcBtn" class="primary-action">Comparar ofertas</button>
+    <p class="calc-hint" id="calcHint">Preencha cotação e spread de ao menos uma oferta.</p>
+    <p class="calc-error" id="calcError" style="display:none;"></p>
   </div>
 
   <div class="panel">
     <div class="head-row">
-      <p class="panel-title">Histórico desta sessão</p>
+      <p class="panel-title">Comparações</p>
       <button class="ghost" id="clearBtn" data-goatcounter-click="historico_limpo">Limpar histórico</button>
     </div>
     <div id="historyList"></div>
@@ -576,7 +592,6 @@ let history = [];
 
 const offersListEl = document.getElementById('offersList');
 const exampleCard = document.getElementById('exampleCard');
-const resultsEl = document.getElementById('results');
 const historyList = document.getElementById('historyList');
 const historyEmpty = document.getElementById('historyEmpty');
 const upsellCard = document.getElementById('upsellCard');
@@ -701,7 +716,28 @@ modalBackdrop.addEventListener('click', (e) => {
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
 function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
+function fmtCurrency(n){ return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
+
+function buildRowHtml(offer, isBest, amount, colorIndex){
+  const finalHtml = amount != null
+    ? fmtCurrency(offer.vet * amount)
+    : '';
+  return `
+    <div class="row ${isBest ? 'best' : ''}">
+      <div class="bar" style="background:${offerColor(colorIndex)};"></div>
+      <div class="row-left">
+        <div class="row-top">
+          <span class="name">${escapeHtml(offer.name)}</span>
+          ${isBest ? '<span class="badge">★ melhor</span>' : ''}
+        </div>
+        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString('pt-BR')}%</div>
+        <div class="row-vet">VET ${fmt(offer.vet)}</div>
+      </div>
+      <div class="row-final">${finalHtml}</div>
+    </div>
+  `;
+}
 
 // --- Autenticação ---
 const loginOverlay = document.getElementById('loginOverlay');
@@ -920,9 +956,22 @@ function updateCalcButtonState(){
   calcHint.style.display = validCount === 0 ? 'block' : 'none';
 }
 
+function showCalcError(msg){
+  const el = document.getElementById('calcError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideCalcError(){
+  const el = document.getElementById('calcError');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
 function calculate(){
   if (offers.length === 0){
-    resultsEl.innerHTML = '<p class="empty error">Cadastre ao menos uma oferta pra calcular.</p>';
+    // Rede de segurança -- na prática inalcançável, já que o botão fica
+    // desabilitado até existir ao menos uma oferta válida.
+    showCalcError('Cadastre ao menos uma oferta pra calcular.');
     window.goatcounter && window.goatcounter.count({ path: 'erro_sem_oferta', event: true });
     return;
   }
@@ -931,10 +980,12 @@ function calculate(){
   const skippedCount = offers.length - validOffers.length;
 
   if (validOffers.length === 0){
-    resultsEl.innerHTML = '<p class="empty error">Preencha spread e cotação de ao menos uma oferta.</p>';
+    showCalcError('Preencha spread e cotação de ao menos uma oferta.');
     window.goatcounter && window.goatcounter.count({ path: 'erro_validacao', event: true });
     return;
   }
+
+  hideCalcError();
 
   let blankCount = 0;
   const computed = validOffers.map(o => {
@@ -953,28 +1004,15 @@ function calculate(){
 
   const maxVet = Math.max(...computed.map(v => v.vet));
 
-  const skipNoticeHtml = skippedCount > 0
-    ? `<p class="skip-notice">${skippedCount} oferta${skippedCount > 1 ? 's' : ''} incompleta${skippedCount > 1 ? 's' : ''} ${skippedCount > 1 ? 'foram ignoradas' : 'foi ignorada'}.</p>`
-    : '';
-
-  resultsEl.innerHTML = skipNoticeHtml + computed.map((v, i) => {
-    const isBest = v.vet === maxVet;
-    return `
-      <div class="row ${isBest ? 'best' : ''}">
-        <div class="bar" style="background:${offerColor(i)};width:4px;height:28px;"></div>
-        <div class="label">${v.name}<span class="small">spread ${(v.spread * 100).toLocaleString('pt-BR')}%</span></div>
-        <div class="vet">${fmt(v.vet)}</div>
-        <div class="badge">${isBest ? '★ melhor' : ''}</div>
-      </div>
-    `;
-  }).join('');
+  const rawAmount = parseFloat(document.getElementById('amountInput').value);
+  const amount = (!isNaN(rawAmount) && rawAmount > 0) ? rawAmount : null;
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const best = computed.find(v => v.vet === maxVet).name;
 
-  const entry = { date: dateStr, time: timeStr, offers: computed, best };
+  const entry = { date: dateStr, time: timeStr, offers: computed, best, amount, skippedCount };
 
   if (currentUser){
     history.unshift(entry); // otimista -- já mostra antes da escrita confirmar
@@ -1040,21 +1078,20 @@ function renderHistory(){
 
   historyList.innerHTML = history.map((entry, idx) => {
     const sorted = [...entry.offers].sort((a, b) => b.vet - a.vet);
-    const rows = sorted.map(o => {
+    const rows = sorted.map((o, i) => {
       const isBest = o.name === entry.best;
-      return `
-        <div class="history-offer-row ${isBest ? 'best' : ''}">
-          <span class="name">${escapeHtml(o.name)}${isBest ? '<span class="star">★</span>' : ''}</span>
-          <span class="vet">${fmt(o.vet)}</span>
-        </div>
-      `;
+      return buildRowHtml(o, isBest, entry.amount != null ? entry.amount : null, i);
     }).join('');
+    const skipNoticeHtml = entry.skippedCount > 0
+      ? `<p class="skip-notice">${entry.skippedCount} oferta${entry.skippedCount > 1 ? 's' : ''} incompleta${entry.skippedCount > 1 ? 's' : ''} ${entry.skippedCount > 1 ? 'foram ignoradas' : 'foi ignorada'}.</p>`
+      : '';
     return `
       <div class="history-card" data-index="${idx}">
         <button class="mini-btn danger history-delete-btn" title="Excluir consulta">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16z"/></svg>
         </button>
         <p class="datetime">${entry.date || ''} ${entry.time}</p>
+        ${skipNoticeHtml}
         ${rows}
       </div>
     `;
@@ -1107,6 +1144,14 @@ document.getElementById('clearBtn').addEventListener('click', async () => {
   if (!currentUser) saveSession();
   renderHistory();
   renderUpsell();
+});
+
+document.getElementById('amountInfo').addEventListener('click', e => {
+  e.stopPropagation();
+  const info = e.currentTarget;
+  const wasOpen = info.classList.contains('open');
+  document.querySelectorAll('.info.open').forEach(el => el.classList.remove('open'));
+  if (!wasOpen) info.classList.add('open');
 });
 
 document.addEventListener('click', () => {
