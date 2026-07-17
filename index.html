@@ -813,7 +813,15 @@ async function saveOfferToFirestore(offer){
 
 async function writeHistoryEntryToFirestore(entry){
   const createdAt = entry.createdAt || Date.now();
-  const payload = { date: entry.date, time: entry.time, offers: entry.offers, best: entry.best, createdAt };
+  const payload = {
+    date: entry.date,
+    time: entry.time,
+    offers: entry.offers,
+    best: entry.best,
+    amount: entry.amount != null ? entry.amount : null,
+    skippedCount: entry.skippedCount || 0,
+    createdAt
+  };
   const docRef = await historyCollection().add(payload);
   return { ...payload, firestoreId: docRef.id };
 }
