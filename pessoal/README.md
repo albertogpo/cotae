@@ -63,8 +63,18 @@ App estático, sem backend. Precisa estar servido em `https://` (não `file://`)
 - [x] **Passo 0** — comparador com ofertas fixas (uso pessoal).
 - [x] **Passo 1** — ofertas configuráveis, com histórico sincronizado via Dropbox.
 - [x] **Passo 2** — versão pública, sem necessidade de conta: configurador de ofertas na tela inicial, histórico apenas da sessão.
-- [ ] **Passo 3** — modelo com conta de usuário, múltiplas plataformas salvas e histórico persistente na nuvem.
-- [ ] **Passo 4** — modelo SaaS: sincronização entre dispositivos, relatórios de qual oferta foi mais vantajosa ao longo do tempo, suporte a múltiplas moedas.
+- [x] **Passo 3** — modelo com conta de usuário (login Google), ofertas salvas e histórico persistente na nuvem (Firebase), migração automática do histórico de sessão ao criar conta.
+- [ ] **Passo 4** — modelo SaaS: relatórios de qual oferta foi mais vantajosa ao longo do tempo, suporte a múltiplas moedas.
+
+### Ideias mapeadas a partir do feedback do alpha público (Breno e Tomas)
+
+Analisadas e conscientemente adiadas — não descartadas, só fora do escopo do alpha atual:
+
+- **Modo empréstimo/financiamento** (sugestão do Breno) — comparar taxas de empréstimo entre bancos, não só câmbio. Diferente do que pareceu inicialmente, **não é uma generalização de linguagem** dos campos atuais — é um modelo de cálculo genuinamente distinto (amortização/Tabela Price, com juros compostos ao longo de parcelas), exigindo seus próprios campos de entrada (taxa de juros mensal, número de parcelas) e suas próprias saídas (valor da parcela, valor total pago, total de juros). Equivalente ao CET (Custo Efetivo Total) que bancos são obrigados a informar por lei — mesmo conceito do nosso VET, mas em outro domínio. Entraria como um "modo" novo dentro do app (seletor de tipo de cálculo no topo), não como ajuste do modo câmbio existente.
+- **Taxa fixa por oferta** (sugestão do Tomas) — além do spread percentual, permitir uma taxa fixa em R$ por operação. Avaliado e adiado por dois motivos: (1) só faz sentido combinada com o campo de valor a converter (já implementado no Passo 3) — sem um valor informado, não dá pra expressar o impacto de uma taxa fixa; (2) ainda não temos confirmação de que alguma das plataformas comparadas por nós de fato cobra taxa fixa — é especulativo, sem validação real de necessidade ainda.
+- **Sistema de avaliações/reviews das ofertas** (sugestão do Tomas) — usuários compartilhando experiência com cada plataforma (ex: "melhor taxa, mas demora pra transferir"). Maior investida de todas as ideias mapeadas: exige conta (já temos), mas também moderação, agregação de notas, e mitigação de abuso/spam. Conecta com a visão original de "relatório de decisão ao longo do tempo" como diferencial de produto, não só calculadora — mas é visão de longo prazo (pós-alpha), não próximo passo imediato.
+- **Generalizar a linguagem da interface além de câmbio** (ex: "Cotação (R$)" → termo mais neutro) — avaliado e **descartado por ora**. Câmbio tem terminologia própria e consolidada; caso outros tipos de oferta (como empréstimo, acima) sejam adicionados no futuro, cada um teria sua própria nomenclatura, em vez de forçar um vocabulário genérico único para todos os casos.
+- **"Oferta" vs. "plataforma"** como termo da interface — permanece em aberto, sem decisão tomada. Considerado por causa do feedback do Tomas (achou "oferta" estranho), mas mantido por ora porque "oferta" distingue casos como TechFX promocional vs. normal (mesma plataforma, condições diferentes) — "plataforma" perderia essa distinção.
 
 
 ## Stack
