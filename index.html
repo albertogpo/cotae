@@ -1027,7 +1027,11 @@ function calculate(){
 
     syncState = 'syncing';
     renderSyncStatus();
-    writeHistoryEntryToFirestore(entry).then(() => {
+    writeHistoryEntryToFirestore(entry).then(saved => {
+      // Guarda o firestoreId no mesmo objeto que já está em `history`
+      // (mesma referência) -- sem isso, excluir esta consulta na mesma
+      // sessão em que foi calculada não apagaria o documento no Firestore.
+      entry.firestoreId = saved.firestoreId;
       syncState = 'synced';
       lastSyncedAt = Date.now();
       lastFailedAction = null;
@@ -1038,7 +1042,8 @@ function calculate(){
       lastFailedAction = () => {
         syncState = 'syncing';
         renderSyncStatus();
-        writeHistoryEntryToFirestore(entry).then(() => {
+        writeHistoryEntryToFirestore(entry).then(saved => {
+          entry.firestoreId = saved.firestoreId;
           syncState = 'synced';
           lastSyncedAt = Date.now();
           lastFailedAction = null;
@@ -1174,14 +1179,19 @@ renderOffers();
 renderHistory();
 renderUpsell();
 
-async function loadAndMergeAccountData(user){
+async function loadAndMergeAccountData(user, allowMigration){
   syncState = 'syncing';
   renderSyncStatus();
 
-  // Só migra o que estava na sessão na primeira vez que detectamos login
-  // nesta carga de página -- evita duplicar em re-disparos do listener.
-  const sessionOffersToMigrate = hasMergedThisPageLoad ? [] : offers.filter(o => !o.savedId);
-  const sessionHistoryToMigrate = hasMergedThisPageLoad ? [] : history.slice();
+  // Só migra o que estava na sessão anônima se isto for de fato uma transição
+  // deslogado -> logado nesta mesma carga de página (allowMigration=true).
+  // Quando o Firebase apenas restaura uma sessão já logada ao recarregar a
+  // página, `offers`/`history` vêm do sessionStorage e podem conter dado
+  // velho de uma sessão anônima anterior -- sem essa checagem, esse dado
+  // velho seria regravado no Firestore a cada F5.
+  const shouldMigrate = allowMigration && !hasMergedThisPageLoad;
+  const sessionOffersToMigrate = shouldMigrate ? offers.filter(o => !o.savedId) : [];
+  const sessionHistoryToMigrate = shouldMigrate ? history.slice() : [];
 
   try {
     const accountOffers = await loadAccountOffers();
@@ -1203,7 +1213,7 @@ async function loadAndMergeAccountData(user){
   } catch (err) {
     console.error('Erro ao carregar/migrar dados da conta:', err);
     syncState = 'error';
-    lastFailedAction = () => loadAndMergeAccountData(user).then(() => {
+    lastFailedAction = () => loadAndMergeAccountData(user, allowMigration).then(() => {
       renderOffers();
       renderHistory();
       renderUpsell();
@@ -1213,9 +1223,18 @@ async function loadAndMergeAccountData(user){
   renderSyncStatus();
 }
 
+let authInitialCheckDone = false;
+
 auth.onAuthStateChanged(async (user) => {
+  // A primeira vez que este callback dispara nesta carga de página é o
+  // Firebase restaurando uma sessão já existente (ou confirmando que não há
+  // nenhuma) -- não é uma transição real de deslogado pra logado, mesmo que
+  // `currentUser` (variável JS, sempre null no início) pareça indicar isso.
+  const isInitialCheck = !authInitialCheckDone;
+  authInitialCheckDone = true;
+
   if (user){
-    const isNewLogin = !currentUser;
+    const isNewLogin = !currentUser && !isInitialCheck;
     currentUser = user;
     sessionWarningBanner.style.display = 'none';
     loginLink.style.display = 'none';
@@ -1224,7 +1243,7 @@ auth.onAuthStateChanged(async (user) => {
     logoutBtn.style.display = 'inline-block';
     accountBanner.style.display = 'flex';
 
-    await loadAndMergeAccountData(user);
+    await loadAndMergeAccountData(user, isNewLogin);
 
     if (isNewLogin){
       window.goatcounter && window.goatcounter.count({ path: 'conta_login_sucesso', event: true });
