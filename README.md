@@ -1,6 +1,6 @@
 # Cotaê
 
-Comparador de cotações de câmbio — descubra em segundos qual oferta vale mais na hora de trocar moeda, calculando o VET (Valor Efetivo Total) de cada uma.
+Comparador de VET (Valor Efetivo de Troca) entre ofertas de câmbio — descubra em segundos qual oferta vale mais na hora de trocar moeda.
 
 > **Status: alpha.** Em desenvolvimento ativo, sujeito a mudanças.
 
@@ -40,6 +40,17 @@ O Cotaê pode ser instalado como aplicativo, direto do navegador:
 
 Uma vez instalado, abre em janela própria (sem barra de navegador) e o cálculo funciona mesmo offline — a sincronização com a conta, claro, exige internet.
 
+## Feedback
+
+Qualquer pessoa pode dar feedback pelo link "Feedback" no rodapé: uma nota de 1 a 5 estrelas e um comentário livre opcional. O envio é **sempre anônimo**, inclusive para quem está logado -- o feedback nunca é associado à conta, e-mail ou qualquer identificador, e fica guardado numa coleção separada no Firestore (`feedback`), sem permissão de leitura pública.
+
+O modal de feedback também pode aparecer automaticamente, no máximo uma vez até a pessoa responder ou dispensar (com um cooldown de 7 dias após dispensar):
+
+- Depois da segunda comparação bem-sucedida da sessão (nunca na primeira -- a pessoa ainda não teria visto o resultado direito).
+- Pouco depois de criar/entrar numa conta com sucesso.
+
+Nunca aparece automaticamente ao mesmo tempo que o card de upsell de conta.
+
 ## Eventos rastreados (GoatCounter)
 
 | Evento | Quando dispara |
@@ -62,6 +73,7 @@ Uma vez instalado, abre em janela própria (sem barra de navegador) e o cálculo
 | `sync_retry_clicado` | Clique em "Tentar novamente" após falha de sincronização |
 | `privacidade_upsell` | Clique em "leia nosso termo" dentro do card de upsell |
 | `privacidade_rodape` | Clique em "Privacidade" no rodapé |
+| `feedback_rodape` | Clique em "Feedback" no rodapé |
 
 Todos os eventos são contagens agregadas e anônimas -- nenhum contém dado sobre o conteúdo das ofertas (nome, cotação, spread) ou identidade da conta.
 

@@ -306,6 +306,28 @@
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
 
+  /* Quando não há nenhuma oferta cadastrada ainda, "+ Nova oferta" é a
+     ação principal da tela -- ganha o mesmo tratamento visual do CTA
+     primário (outline colorido, mais destaque), até a primeira oferta
+     ser adicionada. */
+  button.ghost.primary-empty-state{
+    color:var(--higlobe);
+    border:1.5px solid var(--higlobe);
+    font-size:13px;
+    padding:12px 20px;
+    width:100%;
+    text-align:center;
+  }
+  button.ghost.primary-empty-state:hover{color:var(--techfx);border-color:var(--techfx);}
+  @media (min-width: 640px){
+    button.ghost.primary-empty-state{
+      width:auto;
+      min-width:240px;
+      display:block;
+      margin:4px auto 20px;
+    }
+  }
+
   .upsell-card{
     position:relative;
     max-width:480px;
@@ -391,11 +413,8 @@
 
   .results{display:flex;flex-direction:column;gap:10px;}
   .row{
-    display:grid;
-    grid-template-columns: 4px 1fr auto;
-    grid-template-rows: auto auto;
-    column-gap:14px;
-    row-gap:2px;
+    display:flex;
+    gap:14px;
     background:var(--panel-hi);
     border:1px solid var(--line);
     border-radius:10px;
@@ -403,25 +422,27 @@
     margin-bottom:8px;
   }
   .row.best{border-color:var(--win);box-shadow:0 0 16px rgba(57,229,157,0.18);}
-  .row .bar{grid-column:1;grid-row:1 / 3;border-radius:3px;}
-  .row-name{
-    grid-column:2;grid-row:1;align-self:start;
+  .row .bar{width:4px;border-radius:3px;flex:none;align-self:stretch;}
+  .row-left{flex:1;min-width:0;}
+  .row-top{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    margin-bottom:4px;
+  }
+  .row-top .name{
     font-size:13px;color:var(--ink);
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .row-badge{
-    grid-column:3;grid-row:1;justify-self:end;align-self:start;
+  .row-top .badge{
     font-family:'Baloo 2',sans-serif;
     font-size:10px;letter-spacing:0.6px;text-transform:uppercase;
-    color:var(--win);white-space:nowrap;
+    color:var(--win);flex:none;
   }
-  .row-meta{grid-column:2;grid-row:2;align-self:end;min-width:0;}
   .row-detail{font-size:11px;color:var(--ink-dim);margin-bottom:6px;}
   .row-vet{font-size:15px;font-weight:600;color:var(--ink);}
   .row-final{
-    grid-column:3;grid-row:2;justify-self:end;align-self:end;
     font-size:19px;font-weight:700;color:var(--ink);
-    white-space:nowrap;
+    display:flex;align-items:center;flex:none;
+    text-align:right;
   }
 
   .history-card{
@@ -489,6 +510,39 @@
   }
   .modal-actions .danger-btn:hover{opacity:0.85;}
 #historyList{max-width:480px;margin:0 auto;}
+
+  .star-rating{
+    display:flex;gap:6px;justify-content:center;
+    margin:4px 0 16px;
+  }
+  .star-rating .star{
+    font-size:28px;line-height:1;cursor:pointer;
+    color:var(--line);
+    transition:color 0.15s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .star-rating .star.filled{color:var(--warn);}
+  .feedback-textarea{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    padding:10px 12px;
+    resize:vertical;
+    min-height:64px;
+    outline:none;
+    margin-bottom:6px;
+  }
+  .feedback-textarea:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
+  .feedback-anon-note{
+    font-size:10.5px;color:var(--ink-dim);margin:10px 0 16px;line-height:1.5;
+  }
+  .modal-actions .feedback-submit-btn:disabled{
+    background:var(--panel-hi);color:var(--ink-dim);box-shadow:none;cursor:not-allowed;
+  }
 </style>
 </head>
 <body>
@@ -529,8 +583,8 @@
     <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;margin-bottom:20px;">+ Nova oferta</button>
 
     <div class="amount-field">
-      <label for="amountInput">Quanto você vai converter? (opcional) <span class="info" id="amountInfo" data-tip="O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
-      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00">
+      <label for="amountInput">Quanto vai converter, na moeda estrangeira? (opcional) <span class="info" id="amountInfo" data-tip="O valor que você recebe na moeda estrangeira (USD, EUR, etc.) antes da conversão. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O valor que você recebe na moeda estrangeira (USD, EUR, etc.) antes da conversão. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
+      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00 (USD, EUR...)">
     </div>
 
     <button id="calcBtn" class="primary-action">Comparar ofertas</button>
@@ -558,7 +612,7 @@
   <footer>
     <p>Os dados desta sessão serão apagados ao fechar a aba.</p>
     <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026</p>
-    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a></p>
+    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a> · <a href="#" id="feedbackFooterLink" data-goatcounter-click="feedback_rodape">Feedback</a></p>
   </footer>
 </div>
 
@@ -636,7 +690,7 @@ function renderSyncStatus(){
     accountBanner.classList.add('state-synced');
     syncDot.className = 'sync-dot synced';
     const timeStr = lastSyncedAt
-      ? new Date(lastSyncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      ? new Date(lastSyncedAt).toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit' })
       : '';
     syncText.textContent = timeStr ? `Sincronizado às ${timeStr}` : 'Sincronizado';
   }
@@ -687,8 +741,14 @@ upsellCta.addEventListener('click', signInWithGoogle);
 
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalBox = document.getElementById('modalBox');
+// Callback opcional disparado quando o modal aberto no momento é fechado
+// sem confirmação/resposta (clique fora ou "cancelar"). Cada modal que
+// precisar reagir ao dispensar (ex: feedback, pra marcar o cooldown) seta
+// isso antes de abrir, e o reseta ao fechar por resposta positiva.
+let modalOnDismiss = null;
 
 function showConfirmModal({ title, message, confirmLabel, onConfirm }){
+  modalOnDismiss = null;
   modalBox.innerHTML = `
     <p class="modal-title">${title}</p>
     <p class="modal-message">${message}</p>
@@ -708,16 +768,137 @@ function showConfirmModal({ title, message, confirmLabel, onConfirm }){
   });
 }
 
-// Clicar fora do modal cancela -- vale para qualquer modal que usar este
-// componente genérico, agora e no futuro.
+// Clicar fora do modal fecha -- vale para qualquer modal que usar este
+// componente genérico, agora e no futuro. Se houver um onDismiss pendente
+// (ex: modal de feedback), ele é disparado antes de fechar.
 modalBackdrop.addEventListener('click', (e) => {
-  if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
+  if (e.target === modalBackdrop){
+    modalBackdrop.classList.remove('open');
+    if (modalOnDismiss){
+      const fn = modalOnDismiss;
+      modalOnDismiss = null;
+      fn();
+    }
+  }
+});
+
+const userLocale = navigator.language || 'pt-BR';
+
+// --- Feedback (modal com estrelas) ---
+const FEEDBACK_KEY = 'cotae-feedback-state';
+const FEEDBACK_REDISMISS_DAYS = 7;
+let comparisonsThisSession = 0;
+
+function loadFeedbackState(){
+  try {
+    const raw = localStorage.getItem(FEEDBACK_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    return {};
+  }
+}
+function saveFeedbackState(state){
+  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(state));
+}
+
+function canAutoShowFeedback(){
+  const state = loadFeedbackState();
+  if (state.respondedAt) return false; // já deu feedback -- não insiste mais sozinho
+  if (state.dismissedAt){
+    const daysSince = (Date.now() - state.dismissedAt) / (1000 * 60 * 60 * 24);
+    if (daysSince < FEEDBACK_REDISMISS_DAYS) return false;
+  }
+  // Nunca empilha com o card de upsell -- um pedido de atenção por vez.
+  if (upsellCard.style.display === 'block') return false;
+  if (modalBackdrop.classList.contains('open')) return false;
+  return true;
+}
+
+function maybeAutoShowFeedback(context, delayMs){
+  if (!canAutoShowFeedback()) return;
+  setTimeout(() => {
+    if (canAutoShowFeedback()) showFeedbackModal(context);
+  }, delayMs != null ? delayMs : 2500);
+}
+
+function showFeedbackModal(context){
+  let selectedRating = 0;
+
+  modalBox.innerHTML = `
+    <p class="modal-title">Você achou o app útil?</p>
+    <div class="star-rating" id="feedbackStars">
+      ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}">★</span>`).join('')}
+    </div>
+    <textarea class="feedback-textarea" id="feedbackTextInput" placeholder="Quer contar mais alguma coisa? (opcional)"></textarea>
+    <p class="feedback-anon-note">Seu feedback é sempre anônimo, mesmo se você estiver logado -- não associamos isso à sua conta.</p>
+    <div class="modal-actions">
+      <button class="ghost" id="feedbackCancelBtn">Agora não</button>
+      <button class="feedback-submit-btn" id="feedbackSubmitBtn" disabled>Enviar</button>
+    </div>
+  `;
+  modalBackdrop.classList.add('open');
+
+  const starEls = modalBox.querySelectorAll('#feedbackStars .star');
+  const submitBtn = document.getElementById('feedbackSubmitBtn');
+
+  function paintStars(){
+    starEls.forEach(s => s.classList.toggle('filled', parseInt(s.dataset.value, 10) <= selectedRating));
+    submitBtn.disabled = selectedRating === 0;
+  }
+
+  starEls.forEach(s => {
+    s.addEventListener('click', () => {
+      selectedRating = parseInt(s.dataset.value, 10);
+      paintStars();
+    });
+  });
+
+  const close = (markDismissed) => {
+    modalBackdrop.classList.remove('open');
+    if (markDismissed){
+      const state = loadFeedbackState();
+      state.dismissedAt = Date.now();
+      saveFeedbackState(state);
+    }
+  };
+
+  modalOnDismiss = () => close(true);
+
+  document.getElementById('feedbackCancelBtn').addEventListener('click', () => close(true));
+
+  submitBtn.addEventListener('click', async () => {
+    if (selectedRating === 0) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    try {
+      await submitFeedback({
+        rating: selectedRating,
+        text: document.getElementById('feedbackTextInput').value,
+        context
+      });
+      const state = loadFeedbackState();
+      state.respondedAt = Date.now();
+      saveFeedbackState(state);
+      modalOnDismiss = null;
+      modalBackdrop.classList.remove('open');
+    } catch (err) {
+      console.error('Erro ao enviar feedback:', err);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar';
+      alert('Não foi possível enviar agora. Tente de novo.');
+    }
+  });
+}
+
+document.getElementById('feedbackFooterLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  showFeedbackModal('manual');
 });
 
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
-function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
-function fmtCurrency(n){ return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmt(n){ return n.toLocaleString(userLocale, { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
+function fmtCurrency(n){ return n.toLocaleString(userLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
 
 function buildRowHtml(offer, isBest, amount, colorIndex){
@@ -727,10 +908,12 @@ function buildRowHtml(offer, isBest, amount, colorIndex){
   return `
     <div class="row ${isBest ? 'best' : ''}">
       <div class="bar" style="background:${offerColor(colorIndex)};"></div>
-      <span class="row-name">${escapeHtml(offer.name)}</span>
-      ${isBest ? '<span class="row-badge">★ melhor</span>' : ''}
-      <div class="row-meta">
-        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString('pt-BR')}%</div>
+      <div class="row-left">
+        <div class="row-top">
+          <span class="name">${escapeHtml(offer.name)}</span>
+          ${isBest ? '<span class="badge">★ melhor</span>' : ''}
+        </div>
+        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString(userLocale)}%</div>
         <div class="row-vet">VET ${fmt(offer.vet)}</div>
       </div>
       <div class="row-final">${finalHtml}</div>
@@ -830,6 +1013,18 @@ async function clearAccountHistory(){
   await Promise.all(snapshot.docs.map(doc => doc.ref.delete()));
 }
 
+// Feedback é sempre anônimo -- de propósito, nunca associamos ao uid do
+// usuário, mesmo quando ele está logado, pra manter a mesma promessa de
+// privacidade em qualquer estado de conta.
+async function submitFeedback({ rating, text, context }){
+  await db.collection('feedback').add({
+    rating,
+    text: (text || '').trim(),
+    context: context || 'manual',
+    createdAt: Date.now()
+  });
+}
+
 function persistOffersState(){
   // Logado: cada oferta só é salva de verdade quando a pessoa clica no
   // ícone de salvar (💾) -- editar um campo não persiste sozinho.
@@ -852,6 +1047,7 @@ function saveSession(){
 
 function renderOffers(){
   exampleCard.style.display = offers.length === 0 ? 'block' : 'none';
+  document.getElementById('addOfferBtn').classList.toggle('primary-empty-state', offers.length === 0);
 
   offersListEl.innerHTML = offers.map((o, i) => `
     <div class="offer-card" data-id="${o.id}">
@@ -861,7 +1057,7 @@ function renderOffers(){
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
         <div class="offer-field quote-field">
-          <label>Cotação (R$) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
+          <label>Cotação (na sua moeda) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa, na sua moeda local">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa, na sua moeda local</span></span></label>
           <input type="number" step="0.0001" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
         </div>
         <div class="offer-field spread-field">
@@ -974,6 +1170,13 @@ function hideCalcError(){
   el.textContent = '';
 }
 
+function scrollToNewestHistoryCard(){
+  // O cálculo mais recente sempre entra no topo da lista (history.unshift),
+  // então o primeiro .history-card do DOM é o que acabou de ser gerado.
+  const card = historyList.querySelector('.history-card');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 function calculate(){
   if (offers.length === 0){
     // Rede de segurança -- na prática inalcançável, já que o botão fica
@@ -1015,8 +1218,8 @@ function calculate(){
   const amount = (!isNaN(rawAmount) && rawAmount > 0) ? rawAmount : null;
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString('pt-BR');
-  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = now.toLocaleDateString(userLocale);
+  const timeStr = now.toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const best = computed.find(v => v.vet === maxVet).name;
 
   const entry = { date: dateStr, time: timeStr, offers: computed, best, amount, skippedCount };
@@ -1024,14 +1227,11 @@ function calculate(){
   if (currentUser){
     history.unshift(entry); // otimista -- já mostra antes da escrita confirmar
     renderHistory();
+    scrollToNewestHistoryCard();
 
     syncState = 'syncing';
     renderSyncStatus();
-    writeHistoryEntryToFirestore(entry).then(saved => {
-      // Guarda o firestoreId no mesmo objeto que já está em `history`
-      // (mesma referência) -- sem isso, excluir esta consulta na mesma
-      // sessão em que foi calculada não apagaria o documento no Firestore.
-      entry.firestoreId = saved.firestoreId;
+    writeHistoryEntryToFirestore(entry).then(() => {
       syncState = 'synced';
       lastSyncedAt = Date.now();
       lastFailedAction = null;
@@ -1042,8 +1242,7 @@ function calculate(){
       lastFailedAction = () => {
         syncState = 'syncing';
         renderSyncStatus();
-        writeHistoryEntryToFirestore(entry).then(saved => {
-          entry.firestoreId = saved.firestoreId;
+        writeHistoryEntryToFirestore(entry).then(() => {
           syncState = 'synced';
           lastSyncedAt = Date.now();
           lastFailedAction = null;
@@ -1060,6 +1259,7 @@ function calculate(){
     history.unshift(entry);
     saveSession();
     renderHistory();
+    scrollToNewestHistoryCard();
   }
 
   const dismissState = loadUpsellState();
@@ -1072,6 +1272,13 @@ function calculate(){
   const n = computed.length;
   const band = n === 1 ? '1_oferta' : n === 2 ? '2_ofertas' : n === 3 ? '3_ofertas' : '4mais_ofertas';
   window.goatcounter && window.goatcounter.count({ path: 'calculo_sucesso_' + band, event: true });
+
+  comparisonsThisSession++;
+  // Só na segunda comparação -- na primeira, a pessoa mal viu o card de
+  // resultado ainda, não teria opinião formada, e seria intrusivo demais.
+  if (comparisonsThisSession === 2){
+    maybeAutoShowFeedback('segunda_comparacao');
+  }
 }
 
 function escapeHtml(str){
@@ -1159,7 +1366,6 @@ document.getElementById('clearBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('amountInfo').addEventListener('click', e => {
-  e.preventDefault();
   e.stopPropagation();
   const info = e.currentTarget;
   const wasOpen = info.classList.contains('open');
@@ -1179,19 +1385,14 @@ renderOffers();
 renderHistory();
 renderUpsell();
 
-async function loadAndMergeAccountData(user, allowMigration){
+async function loadAndMergeAccountData(user){
   syncState = 'syncing';
   renderSyncStatus();
 
-  // Só migra o que estava na sessão anônima se isto for de fato uma transição
-  // deslogado -> logado nesta mesma carga de página (allowMigration=true).
-  // Quando o Firebase apenas restaura uma sessão já logada ao recarregar a
-  // página, `offers`/`history` vêm do sessionStorage e podem conter dado
-  // velho de uma sessão anônima anterior -- sem essa checagem, esse dado
-  // velho seria regravado no Firestore a cada F5.
-  const shouldMigrate = allowMigration && !hasMergedThisPageLoad;
-  const sessionOffersToMigrate = shouldMigrate ? offers.filter(o => !o.savedId) : [];
-  const sessionHistoryToMigrate = shouldMigrate ? history.slice() : [];
+  // Só migra o que estava na sessão na primeira vez que detectamos login
+  // nesta carga de página -- evita duplicar em re-disparos do listener.
+  const sessionOffersToMigrate = hasMergedThisPageLoad ? [] : offers.filter(o => !o.savedId);
+  const sessionHistoryToMigrate = hasMergedThisPageLoad ? [] : history.slice();
 
   try {
     const accountOffers = await loadAccountOffers();
@@ -1213,7 +1414,7 @@ async function loadAndMergeAccountData(user, allowMigration){
   } catch (err) {
     console.error('Erro ao carregar/migrar dados da conta:', err);
     syncState = 'error';
-    lastFailedAction = () => loadAndMergeAccountData(user, allowMigration).then(() => {
+    lastFailedAction = () => loadAndMergeAccountData(user).then(() => {
       renderOffers();
       renderHistory();
       renderUpsell();
@@ -1223,18 +1424,9 @@ async function loadAndMergeAccountData(user, allowMigration){
   renderSyncStatus();
 }
 
-let authInitialCheckDone = false;
-
 auth.onAuthStateChanged(async (user) => {
-  // A primeira vez que este callback dispara nesta carga de página é o
-  // Firebase restaurando uma sessão já existente (ou confirmando que não há
-  // nenhuma) -- não é uma transição real de deslogado pra logado, mesmo que
-  // `currentUser` (variável JS, sempre null no início) pareça indicar isso.
-  const isInitialCheck = !authInitialCheckDone;
-  authInitialCheckDone = true;
-
   if (user){
-    const isNewLogin = !currentUser && !isInitialCheck;
+    const isNewLogin = !currentUser;
     currentUser = user;
     sessionWarningBanner.style.display = 'none';
     loginLink.style.display = 'none';
@@ -1243,10 +1435,13 @@ auth.onAuthStateChanged(async (user) => {
     logoutBtn.style.display = 'inline-block';
     accountBanner.style.display = 'flex';
 
-    await loadAndMergeAccountData(user, isNewLogin);
+    await loadAndMergeAccountData(user);
 
     if (isNewLogin){
       window.goatcounter && window.goatcounter.count({ path: 'conta_login_sucesso', event: true });
+      // Um pouco de atraso -- a pessoa acabou de voltar do popup/redirect de
+      // login e ainda está se reorientando na tela.
+      maybeAutoShowFeedback('login', 3000);
     }
 
     renderOffers();
