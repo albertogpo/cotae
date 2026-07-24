@@ -306,28 +306,6 @@
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
 
-  /* Quando não há nenhuma oferta cadastrada ainda, "+ Nova oferta" é a
-     ação principal da tela -- ganha o mesmo tratamento visual do CTA
-     primário (outline colorido, mais destaque), até a primeira oferta
-     ser adicionada. */
-  button.ghost.primary-empty-state{
-    color:var(--higlobe);
-    border:1.5px solid var(--higlobe);
-    font-size:13px;
-    padding:12px 20px;
-    width:100%;
-    text-align:center;
-  }
-  button.ghost.primary-empty-state:hover{color:var(--techfx);border-color:var(--techfx);}
-  @media (min-width: 640px){
-    button.ghost.primary-empty-state{
-      width:auto;
-      min-width:240px;
-      display:block;
-      margin:4px auto 20px;
-    }
-  }
-
   .upsell-card{
     position:relative;
     max-width:480px;
@@ -359,6 +337,88 @@
   .upsell-card .fine-print a{color:var(--techfx);text-decoration:underline;}
   .upsell-card .fine-print a:hover{color:var(--higlobe);}
 
+  .stats-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .stats-chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:normal;
+    text-transform:none;
+    font-weight:400;
+    color:var(--ink-dim);
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:6px 13px;
+    box-shadow:none;
+    cursor:pointer;
+  }
+  .stats-chip:hover{color:var(--ink);border-color:var(--ink-dim);opacity:1;}
+  .stats-chip.active{
+    color:#06121a;
+    background:linear-gradient(100deg, var(--higlobe), var(--techfx));
+    border-color:transparent;
+  }
+  .stats-note{
+    font-size:11px;
+    color:var(--ink-dim);
+    line-height:1.6;
+    margin:0 0 16px;
+  }
+  .stats-rank-card{
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .stats-rank-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .stats-rank-badge{
+    width:20px;height:20px;border-radius:50%;
+    background:var(--bg);border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-size:11px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .stats-rank-badge.first{border-color:var(--win);color:var(--win);}
+  .stats-rank-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .stats-rank-name{font-size:14px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .stats-rank-rate{font-size:12px;color:var(--ink-dim);flex:none;}
+  .stats-rank-body{
+    display:grid;
+    grid-template-columns:1fr 84px;
+    gap:12px;
+    align-items:center;
+  }
+  .stats-bar-track{
+    height:7px;border-radius:4px;
+    background:var(--bg);
+    overflow:hidden;
+    margin-bottom:8px;
+  }
+  .stats-bar-fill{height:100%;border-radius:4px;}
+  .stats-rank-detail{
+    display:flex;flex-wrap:wrap;
+    gap:5px 12px;
+    font-size:11px;color:var(--ink-dim);
+  }
+  .stats-rank-detail strong{color:var(--ink);font-weight:600;}
+  .stats-low{color:var(--win);}
+  .stats-mid{color:var(--warn);}
+  .stats-high{color:var(--err);}
+  .stats-empty-sample{
+    font-size:11px;color:var(--ink-dim);font-style:italic;
+  }
   .primary-action{
     width:100%;
     margin-bottom:14px;
@@ -510,39 +570,6 @@
   }
   .modal-actions .danger-btn:hover{opacity:0.85;}
 #historyList{max-width:480px;margin:0 auto;}
-
-  .star-rating{
-    display:flex;gap:6px;justify-content:center;
-    margin:4px 0 16px;
-  }
-  .star-rating .star{
-    font-size:28px;line-height:1;cursor:pointer;
-    color:var(--line);
-    transition:color 0.15s;
-    -webkit-user-select:none;user-select:none;
-  }
-  .star-rating .star.filled{color:var(--warn);}
-  .feedback-textarea{
-    width:100%;
-    background:var(--bg);
-    border:1px solid var(--line);
-    border-radius:8px;
-    color:var(--ink);
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12.5px;
-    padding:10px 12px;
-    resize:vertical;
-    min-height:64px;
-    outline:none;
-    margin-bottom:6px;
-  }
-  .feedback-textarea:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
-  .feedback-anon-note{
-    font-size:10.5px;color:var(--ink-dim);margin:10px 0 16px;line-height:1.5;
-  }
-  .modal-actions .feedback-submit-btn:disabled{
-    background:var(--panel-hi);color:var(--ink-dim);box-shadow:none;cursor:not-allowed;
-  }
 </style>
 </head>
 <body>
@@ -583,8 +610,8 @@
     <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;margin-bottom:20px;">+ Nova oferta</button>
 
     <div class="amount-field">
-      <label for="amountInput">Quanto vai converter, na moeda estrangeira? (opcional) <span class="info" id="amountInfo" data-tip="O valor que você recebe na moeda estrangeira (USD, EUR, etc.) antes da conversão. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O valor que você recebe na moeda estrangeira (USD, EUR, etc.) antes da conversão. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
-      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00 (USD, EUR...)">
+      <label for="amountInput">Quanto você vai converter? (opcional) <span class="info" id="amountInfo" data-tip="O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
+      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00">
     </div>
 
     <button id="calcBtn" class="primary-action">Comparar ofertas</button>
@@ -609,10 +636,17 @@
     </div>
   </div>
 
+  <div class="panel" id="statsPanel" style="display:none;">
+    <p class="panel-title">Consistência histórica</p>
+    <div class="stats-chips" id="statsChips"></div>
+    <p class="stats-note">Só entram nessa comparação as ofertas com nome preenchido — sem nome, o Cotaê não tem como saber que é a mesma plataforma de uma consulta pra outra.</p>
+    <div id="statsContent"></div>
+  </div>
+
   <footer>
     <p>Os dados desta sessão serão apagados ao fechar a aba.</p>
-    <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026</p>
-    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a> · <a href="#" id="feedbackFooterLink" data-goatcounter-click="feedback_rodape">Feedback</a></p>
+    <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026 · <span id="appVersion"></span></p>
+    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a></p>
   </footer>
 </div>
 
@@ -623,8 +657,19 @@
 </div>
 
 <script>
+const APP_VERSION = '0.1.0';
 const STORAGE_KEY = 'cotae-public-session';
 const OFFER_COLORS = ['#4fc3ff', '#39e59d', '#e0a458', '#c084fc', '#f472b6', '#facc15'];
+
+const STATS_PERIODS = [
+  { key: 'today', label: 'Hoje', days: 0 },
+  { key: '7d', label: '7 dias', days: 7 },
+  { key: '15d', label: '15 dias', days: 15 },
+  { key: '30d', label: '30 dias', days: 30 },
+  { key: 'all', label: 'Sempre', days: null }
+];
+const STATS_MIN_SAMPLE = 3;
+let statsPeriod = '30d';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBr1LIpBqsbQraop1as4xg56tuYZ7THGuk",
@@ -690,7 +735,7 @@ function renderSyncStatus(){
     accountBanner.classList.add('state-synced');
     syncDot.className = 'sync-dot synced';
     const timeStr = lastSyncedAt
-      ? new Date(lastSyncedAt).toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit' })
+      ? new Date(lastSyncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       : '';
     syncText.textContent = timeStr ? `Sincronizado às ${timeStr}` : 'Sincronizado';
   }
@@ -741,14 +786,8 @@ upsellCta.addEventListener('click', signInWithGoogle);
 
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalBox = document.getElementById('modalBox');
-// Callback opcional disparado quando o modal aberto no momento é fechado
-// sem confirmação/resposta (clique fora ou "cancelar"). Cada modal que
-// precisar reagir ao dispensar (ex: feedback, pra marcar o cooldown) seta
-// isso antes de abrir, e o reseta ao fechar por resposta positiva.
-let modalOnDismiss = null;
 
 function showConfirmModal({ title, message, confirmLabel, onConfirm }){
-  modalOnDismiss = null;
   modalBox.innerHTML = `
     <p class="modal-title">${title}</p>
     <p class="modal-message">${message}</p>
@@ -768,137 +807,16 @@ function showConfirmModal({ title, message, confirmLabel, onConfirm }){
   });
 }
 
-// Clicar fora do modal fecha -- vale para qualquer modal que usar este
-// componente genérico, agora e no futuro. Se houver um onDismiss pendente
-// (ex: modal de feedback), ele é disparado antes de fechar.
+// Clicar fora do modal cancela -- vale para qualquer modal que usar este
+// componente genérico, agora e no futuro.
 modalBackdrop.addEventListener('click', (e) => {
-  if (e.target === modalBackdrop){
-    modalBackdrop.classList.remove('open');
-    if (modalOnDismiss){
-      const fn = modalOnDismiss;
-      modalOnDismiss = null;
-      fn();
-    }
-  }
-});
-
-const userLocale = navigator.language || 'pt-BR';
-
-// --- Feedback (modal com estrelas) ---
-const FEEDBACK_KEY = 'cotae-feedback-state';
-const FEEDBACK_REDISMISS_DAYS = 7;
-let comparisonsThisSession = 0;
-
-function loadFeedbackState(){
-  try {
-    const raw = localStorage.getItem(FEEDBACK_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (err) {
-    return {};
-  }
-}
-function saveFeedbackState(state){
-  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(state));
-}
-
-function canAutoShowFeedback(){
-  const state = loadFeedbackState();
-  if (state.respondedAt) return false; // já deu feedback -- não insiste mais sozinho
-  if (state.dismissedAt){
-    const daysSince = (Date.now() - state.dismissedAt) / (1000 * 60 * 60 * 24);
-    if (daysSince < FEEDBACK_REDISMISS_DAYS) return false;
-  }
-  // Nunca empilha com o card de upsell -- um pedido de atenção por vez.
-  if (upsellCard.style.display === 'block') return false;
-  if (modalBackdrop.classList.contains('open')) return false;
-  return true;
-}
-
-function maybeAutoShowFeedback(context, delayMs){
-  if (!canAutoShowFeedback()) return;
-  setTimeout(() => {
-    if (canAutoShowFeedback()) showFeedbackModal(context);
-  }, delayMs != null ? delayMs : 2500);
-}
-
-function showFeedbackModal(context){
-  let selectedRating = 0;
-
-  modalBox.innerHTML = `
-    <p class="modal-title">Você achou o app útil?</p>
-    <div class="star-rating" id="feedbackStars">
-      ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}">★</span>`).join('')}
-    </div>
-    <textarea class="feedback-textarea" id="feedbackTextInput" placeholder="Quer contar mais alguma coisa? (opcional)"></textarea>
-    <p class="feedback-anon-note">Seu feedback é sempre anônimo, mesmo se você estiver logado -- não associamos isso à sua conta.</p>
-    <div class="modal-actions">
-      <button class="ghost" id="feedbackCancelBtn">Agora não</button>
-      <button class="feedback-submit-btn" id="feedbackSubmitBtn" disabled>Enviar</button>
-    </div>
-  `;
-  modalBackdrop.classList.add('open');
-
-  const starEls = modalBox.querySelectorAll('#feedbackStars .star');
-  const submitBtn = document.getElementById('feedbackSubmitBtn');
-
-  function paintStars(){
-    starEls.forEach(s => s.classList.toggle('filled', parseInt(s.dataset.value, 10) <= selectedRating));
-    submitBtn.disabled = selectedRating === 0;
-  }
-
-  starEls.forEach(s => {
-    s.addEventListener('click', () => {
-      selectedRating = parseInt(s.dataset.value, 10);
-      paintStars();
-    });
-  });
-
-  const close = (markDismissed) => {
-    modalBackdrop.classList.remove('open');
-    if (markDismissed){
-      const state = loadFeedbackState();
-      state.dismissedAt = Date.now();
-      saveFeedbackState(state);
-    }
-  };
-
-  modalOnDismiss = () => close(true);
-
-  document.getElementById('feedbackCancelBtn').addEventListener('click', () => close(true));
-
-  submitBtn.addEventListener('click', async () => {
-    if (selectedRating === 0) return;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando...';
-    try {
-      await submitFeedback({
-        rating: selectedRating,
-        text: document.getElementById('feedbackTextInput').value,
-        context
-      });
-      const state = loadFeedbackState();
-      state.respondedAt = Date.now();
-      saveFeedbackState(state);
-      modalOnDismiss = null;
-      modalBackdrop.classList.remove('open');
-    } catch (err) {
-      console.error('Erro ao enviar feedback:', err);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar';
-      alert('Não foi possível enviar agora. Tente de novo.');
-    }
-  });
-}
-
-document.getElementById('feedbackFooterLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  showFeedbackModal('manual');
+  if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
 });
 
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
-function fmt(n){ return n.toLocaleString(userLocale, { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
-function fmtCurrency(n){ return n.toLocaleString(userLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
+function fmtCurrency(n){ return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
 
 function buildRowHtml(offer, isBest, amount, colorIndex){
@@ -913,7 +831,7 @@ function buildRowHtml(offer, isBest, amount, colorIndex){
           <span class="name">${escapeHtml(offer.name)}</span>
           ${isBest ? '<span class="badge">★ melhor</span>' : ''}
         </div>
-        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString(userLocale)}%</div>
+        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString('pt-BR')}%</div>
         <div class="row-vet">VET ${fmt(offer.vet)}</div>
       </div>
       <div class="row-final">${finalHtml}</div>
@@ -1013,18 +931,6 @@ async function clearAccountHistory(){
   await Promise.all(snapshot.docs.map(doc => doc.ref.delete()));
 }
 
-// Feedback é sempre anônimo -- de propósito, nunca associamos ao uid do
-// usuário, mesmo quando ele está logado, pra manter a mesma promessa de
-// privacidade em qualquer estado de conta.
-async function submitFeedback({ rating, text, context }){
-  await db.collection('feedback').add({
-    rating,
-    text: (text || '').trim(),
-    context: context || 'manual',
-    createdAt: Date.now()
-  });
-}
-
 function persistOffersState(){
   // Logado: cada oferta só é salva de verdade quando a pessoa clica no
   // ícone de salvar (💾) -- editar um campo não persiste sozinho.
@@ -1047,7 +953,6 @@ function saveSession(){
 
 function renderOffers(){
   exampleCard.style.display = offers.length === 0 ? 'block' : 'none';
-  document.getElementById('addOfferBtn').classList.toggle('primary-empty-state', offers.length === 0);
 
   offersListEl.innerHTML = offers.map((o, i) => `
     <div class="offer-card" data-id="${o.id}">
@@ -1057,7 +962,7 @@ function renderOffers(){
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
         <div class="offer-field quote-field">
-          <label>Cotação (na sua moeda) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa, na sua moeda local">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa, na sua moeda local</span></span></label>
+          <label>Cotação (R$) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
           <input type="number" step="0.0001" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
         </div>
         <div class="offer-field spread-field">
@@ -1170,13 +1075,6 @@ function hideCalcError(){
   el.textContent = '';
 }
 
-function scrollToNewestHistoryCard(){
-  // O cálculo mais recente sempre entra no topo da lista (history.unshift),
-  // então o primeiro .history-card do DOM é o que acabou de ser gerado.
-  const card = historyList.querySelector('.history-card');
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
 function calculate(){
   if (offers.length === 0){
     // Rede de segurança -- na prática inalcançável, já que o botão fica
@@ -1200,12 +1098,14 @@ function calculate(){
   let blankCount = 0;
   const computed = validOffers.map(o => {
     let displayName = (o.name || '').trim();
+    const named = !!displayName;
     if (!displayName){
       blankCount++;
       displayName = 'Oferta ' + blankCount;
     }
     return {
       name: displayName,
+      named,
       quote: o.quote,
       spread: o.spread,
       vet: computeVET(o.quote, o.spread)
@@ -1218,16 +1118,16 @@ function calculate(){
   const amount = (!isNaN(rawAmount) && rawAmount > 0) ? rawAmount : null;
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString(userLocale);
-  const timeStr = now.toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const best = computed.find(v => v.vet === maxVet).name;
 
-  const entry = { date: dateStr, time: timeStr, offers: computed, best, amount, skippedCount };
+  const entry = { date: dateStr, time: timeStr, offers: computed, best, amount, skippedCount, createdAt: now.getTime() };
 
   if (currentUser){
     history.unshift(entry); // otimista -- já mostra antes da escrita confirmar
     renderHistory();
-    scrollToNewestHistoryCard();
+    renderStats();
 
     syncState = 'syncing';
     renderSyncStatus();
@@ -1259,7 +1159,7 @@ function calculate(){
     history.unshift(entry);
     saveSession();
     renderHistory();
-    scrollToNewestHistoryCard();
+    renderStats();
   }
 
   const dismissState = loadUpsellState();
@@ -1272,19 +1172,162 @@ function calculate(){
   const n = computed.length;
   const band = n === 1 ? '1_oferta' : n === 2 ? '2_ofertas' : n === 3 ? '3_ofertas' : '4mais_ofertas';
   window.goatcounter && window.goatcounter.count({ path: 'calculo_sucesso_' + band, event: true });
-
-  comparisonsThisSession++;
-  // Só na segunda comparação -- na primeira, a pessoa mal viu o card de
-  // resultado ainda, não teria opinião formada, e seria intrusivo demais.
-  if (comparisonsThisSession === 2){
-    maybeAutoShowFeedback('segunda_comparacao');
-  }
 }
 
 function escapeHtml(str){
   return (str || '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
+}
+
+// --- Estatísticas históricas (ranking de consistência por oferta) ---
+function filterHistoryByPeriod(entries, periodKey){
+  const period = STATS_PERIODS.find(p => p.key === periodKey) || STATS_PERIODS[3];
+  if (period.days === null) return entries;
+
+  let cutoff;
+  if (period.days === 0){
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    cutoff = startOfDay.getTime();
+  } else {
+    cutoff = Date.now() - period.days * 24 * 60 * 60 * 1000;
+  }
+  // Entradas antigas sem createdAt (não deveria acontecer, mas por segurança)
+  // ficam de fora de qualquer filtro que não seja "Sempre".
+  return entries.filter(e => typeof e.createdAt === 'number' && e.createdAt >= cutoff);
+}
+
+function stabilityInfo(amplitude){
+  if (amplitude < 0.02) return { label: 'baixa variação', cls: 'stats-low' };
+  if (amplitude < 0.05) return { label: 'variação média', cls: 'stats-mid' };
+  return { label: 'alta variação', cls: 'stats-high' };
+}
+
+function computeOfferStats(periodKey){
+  const filtered = filterHistoryByPeriod(history, periodKey);
+  const groups = {};
+
+  filtered.forEach(entry => {
+    entry.offers.forEach(o => {
+      if (!o.named) return; // ofertas sem nome não entram na comparação histórica
+      const key = o.name.trim().toLowerCase();
+      if (!groups[key]){
+        groups[key] = { displayName: o.name.trim(), leads: 0, total: 0, vets: [], points: [] };
+      }
+      const g = groups[key];
+      g.total++;
+      g.vets.push(o.vet);
+      g.points.push({ t: entry.createdAt || 0, vet: o.vet });
+      if (o.name === entry.best) g.leads++;
+    });
+  });
+
+  const rows = Object.values(groups).map(g => {
+    const avg = g.vets.reduce((a, b) => a + b, 0) / g.vets.length;
+    const min = Math.min(...g.vets);
+    const max = Math.max(...g.vets);
+    const amplitude = avg > 0 ? (max - min) / avg : 0;
+    const leadRate = g.total > 0 ? g.leads / g.total : 0;
+    const sparkline = g.points.sort((a, b) => a.t - b.t).slice(-10).map(p => p.vet);
+    return { name: g.displayName, leads: g.leads, total: g.total, leadRate, avg, min, max, amplitude, sparkline };
+  });
+
+  rows.sort((a, b) => b.leadRate - a.leadRate || b.avg - a.avg);
+  return rows;
+}
+
+function buildSparklineSvg(values, color){
+  if (values.length < 2){
+    return '';
+  }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const w = 84, h = 26, pad = 3;
+  const step = (w - pad * 2) / (values.length - 1);
+  const points = values.map((v, i) => {
+    const x = pad + i * step;
+    const y = pad + (1 - (v - min) / span) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const last = points.split(' ').pop().split(',');
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">
+    <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="${color}"/>
+  </svg>`;
+}
+
+function renderStatsChips(){
+  const chipsEl = document.getElementById('statsChips');
+  chipsEl.innerHTML = STATS_PERIODS.map(p =>
+    `<button class="stats-chip ${p.key === statsPeriod ? 'active' : ''}" data-key="${p.key}" data-goatcounter-click="stats_filtro_${p.key}">${p.label}</button>`
+  ).join('');
+  chipsEl.querySelectorAll('.stats-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      statsPeriod = btn.dataset.key;
+      renderStats();
+    });
+  });
+}
+
+function renderStats(){
+  const statsPanel = document.getElementById('statsPanel');
+  const statsContent = document.getElementById('statsContent');
+
+  renderStatsChips();
+
+  if (history.length === 0){
+    statsPanel.style.display = 'none';
+    return;
+  }
+  statsPanel.style.display = 'block';
+
+  const rows = computeOfferStats(statsPeriod);
+  const eligible = rows.filter(r => r.total >= STATS_MIN_SAMPLE);
+  const thin = rows.filter(r => r.total > 0 && r.total < STATS_MIN_SAMPLE);
+
+  if (rows.length === 0){
+    statsContent.innerHTML = '<p class="empty">Nenhuma oferta com nome nesse período ainda.</p>';
+    return;
+  }
+
+  const maxRate = Math.max(...eligible.map(r => r.leadRate), 0.0001);
+
+  let html = eligible.map((r, i) => {
+    const color = offerColor(i);
+    const stab = stabilityInfo(r.amplitude);
+    const barWidth = (r.leadRate / maxRate) * 100;
+    return `
+      <div class="stats-rank-card">
+        <div class="stats-rank-top">
+          <span class="stats-rank-badge ${i === 0 ? 'first' : ''}">${i + 1}</span>
+          <span class="stats-rank-dot" style="background:${color};"></span>
+          <span class="stats-rank-name">${escapeHtml(r.name)}</span>
+          <span class="stats-rank-rate">liderou em ${(r.leadRate * 100).toFixed(0)}% (${r.leads}/${r.total})</span>
+        </div>
+        <div class="stats-rank-body">
+          <div>
+            <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barWidth}%;background:${color};"></div></div>
+            <div class="stats-rank-detail">
+              <span>VET médio <strong>${fmt(r.avg)}</strong></span>
+              <span>Faixa <strong>${fmt(r.min)}–${fmt(r.max)}</strong></span>
+              <span class="${stab.cls}">${stab.label}</span>
+            </div>
+          </div>
+          ${buildSparklineSvg(r.sparkline, color)}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (thin.length > 0){
+    html += thin.map(r => `
+      <p class="stats-empty-sample">${escapeHtml(r.name)}: dados insuficientes nesse período (${r.total} de ${STATS_MIN_SAMPLE} comparações mínimas).</p>
+    `).join('');
+  }
+
+  statsContent.innerHTML = html;
 }
 
 function renderHistory(){
@@ -1344,6 +1387,7 @@ async function deleteHistoryEntry(idx){
   history.splice(idx, 1);
   if (!currentUser) saveSession();
   renderHistory();
+  renderStats();
   renderUpsell();
   window.goatcounter && window.goatcounter.count({ path: 'historico_excluido_individual', event: true });
 }
@@ -1362,6 +1406,7 @@ document.getElementById('clearBtn').addEventListener('click', async () => {
   history = [];
   if (!currentUser) saveSession();
   renderHistory();
+  renderStats();
   renderUpsell();
 });
 
@@ -1378,11 +1423,14 @@ document.addEventListener('click', () => {
 });
 
 // --- Inicialização ---
+document.getElementById('appVersion').textContent = 'v' + APP_VERSION;
+
 const session = loadSession();
 offers = session.offers || [];
 history = session.history || [];
 renderOffers();
 renderHistory();
+renderStats();
 renderUpsell();
 
 async function loadAndMergeAccountData(user){
@@ -1417,6 +1465,7 @@ async function loadAndMergeAccountData(user){
     lastFailedAction = () => loadAndMergeAccountData(user).then(() => {
       renderOffers();
       renderHistory();
+      renderStats();
       renderUpsell();
     });
   }
@@ -1439,13 +1488,11 @@ auth.onAuthStateChanged(async (user) => {
 
     if (isNewLogin){
       window.goatcounter && window.goatcounter.count({ path: 'conta_login_sucesso', event: true });
-      // Um pouco de atraso -- a pessoa acabou de voltar do popup/redirect de
-      // login e ainda está se reorientando na tela.
-      maybeAutoShowFeedback('login', 3000);
     }
 
     renderOffers();
     renderHistory();
+    renderStats();
     renderUpsell();
   } else {
     currentUser = null;
@@ -1463,6 +1510,7 @@ auth.onAuthStateChanged(async (user) => {
     history = s.history || [];
     renderOffers();
     renderHistory();
+    renderStats();
     renderUpsell();
   }
 });
