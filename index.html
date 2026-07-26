@@ -1298,9 +1298,11 @@ function filterHistoryByPeriod(entries, periodKey){
   } else {
     cutoff = Date.now() - period.days * 24 * 60 * 60 * 1000;
   }
-  // Entradas antigas sem createdAt (não deveria acontecer, mas por segurança)
-  // ficam de fora de qualquer filtro que não seja "Sempre".
-  return entries.filter(e => typeof e.createdAt === 'number' && e.createdAt >= cutoff);
+  // Entradas antigas sem createdAt (de antes desse campo existir) não têm
+  // como ser comparadas ao corte de data -- em vez de sumir do histórico
+  // silenciosamente, elas ficam visíveis em qualquer período (é melhor
+  // aparecer indevidamente do que desaparecer sem explicação).
+  return entries.filter(e => typeof e.createdAt !== 'number' || e.createdAt >= cutoff);
 }
 
 function stabilityInfo(amplitude){
@@ -1309,13 +1311,21 @@ function stabilityInfo(amplitude){
   return { label: 'alta variação', cls: 'stats-high' };
 }
 
+function isNamedOffer(o){
+  // Consultas salvas antes dessa marcação existir não têm o campo `named` --
+  // pra não excluir todo o histórico anterior, tratamos como nomeada
+  // qualquer oferta cujo nome não seja o padrão automático "Oferta N".
+  if (typeof o.named === 'boolean') return o.named;
+  return !/^Oferta \d+$/.test((o.name || '').trim());
+}
+
 function computeOfferStats(periodKey){
   const filtered = filterHistoryByPeriod(history, periodKey);
   const groups = {};
 
   filtered.forEach(entry => {
     entry.offers.forEach(o => {
-      if (!o.named) return; // ofertas sem nome não entram na comparação histórica
+      if (!isNamedOffer(o)) return; // ofertas sem nome não entram na comparação histórica
       const key = o.name.trim().toLowerCase();
       if (!groups[key]){
         groups[key] = { displayName: o.name.trim(), leads: 0, total: 0, vets: [], points: [] };
