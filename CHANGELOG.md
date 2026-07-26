@@ -6,6 +6,14 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 > As versões 0.1.0 e 0.2.0 são retroativas: não foram numeradas no momento em que foram publicadas. O versionamento formal começa a partir da 0.3.0.
 
+## [0.4.0]
+
+### Adicionado
+- Pílulas de oferta na aba "Consistência histórica" — permitem habilitar/desabilitar cada oferta individualmente na comparação (ex: ignorar uma promoção pontual que distorce o ranking). A exclusão fica salva no navegador e persiste entre sessões.
+
+### Alterado
+- Ao excluir uma oferta, o "liderou em X%" das demais é recalculado considerando só as ofertas habilitadas em cada consulta, em vez de manter fixo o resultado histórico original (que foi calculado com todas as ofertas, inclusive a que foi excluída depois).
+
 ## [0.3.1]
 
 ### Corrigido

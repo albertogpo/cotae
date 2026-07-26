@@ -401,6 +401,36 @@
     line-height:1.6;
     margin:0 0 16px;
   }
+  .offer-pills{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .offer-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    font-weight:400;
+    letter-spacing:normal;
+    text-transform:none;
+    color:var(--ink);
+    background:var(--panel-hi);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:5px 12px 5px 9px;
+    box-shadow:none;
+    cursor:pointer;
+  }
+  .offer-pill:hover{border-color:var(--ink-dim);opacity:1;}
+  .offer-pill .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .offer-pill.excluded{
+    color:var(--ink-dim);
+    opacity:0.6;
+    text-decoration:line-through;
+  }
   .stats-rank-card{
     background:var(--panel-hi);
     border:1px solid var(--line);
@@ -670,6 +700,7 @@
     <div id="statsTabContent" style="display:none;">
       <div class="stats-chips" id="statsChips"></div>
       <p class="stats-note">Só entram nessa comparação as ofertas com nome preenchido — sem nome, o Cotaê não tem como saber que é a mesma plataforma de uma consulta pra outra.</p>
+      <div class="offer-pills" id="offerPills"></div>
       <div id="statsContent"></div>
     </div>
 
@@ -1319,13 +1350,68 @@ function isNamedOffer(o){
   return !/^Oferta \d+$/.test((o.name || '').trim());
 }
 
+// Cor estável por nome (não por posição no ranking) -- assim a pílula e o
+// card da mesma oferta mantêm a mesma cor mesmo quando a ordem do ranking
+// muda (o que acontece toda vez que uma oferta é habilitada/desabilitada).
+function offerColorForName(name){
+  let hash = 0;
+  const s = (name || '').toLowerCase();
+  for (let i = 0; i < s.length; i++){
+    hash = (hash * 31 + s.charCodeAt(i)) | 0;
+  }
+  return OFFER_COLORS[Math.abs(hash) % OFFER_COLORS.length];
+}
+
+const STATS_EXCLUDED_KEY = 'cotae-stats-excluded-offers';
+let excludedOfferKeys = new Set(loadExcludedOfferKeys());
+
+function loadExcludedOfferKeys(){
+  try {
+    const raw = localStorage.getItem(STATS_EXCLUDED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+function saveExcludedOfferKeys(){
+  localStorage.setItem(STATS_EXCLUDED_KEY, JSON.stringify([...excludedOfferKeys]));
+}
+
+// Todos os nomes de oferta presentes no período, antes de aplicar exclusão
+// -- é o que alimenta as pílulas (precisa mostrar mesmo a oferta desabilitada,
+// senão não teria como reabilitar ela).
+function collectNamedOfferNames(periodKey){
+  const filtered = filterHistoryByPeriod(history, periodKey);
+  const seen = {};
+  filtered.forEach(entry => {
+    entry.offers.forEach(o => {
+      if (!isNamedOffer(o)) return;
+      const key = o.name.trim().toLowerCase();
+      if (!seen[key]) seen[key] = o.name.trim();
+    });
+  });
+  return Object.keys(seen)
+    .map(key => ({ key, name: seen[key] }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+}
+
 function computeOfferStats(periodKey){
   const filtered = filterHistoryByPeriod(history, periodKey);
   const groups = {};
 
   filtered.forEach(entry => {
-    entry.offers.forEach(o => {
-      if (!isNamedOffer(o)) return; // ofertas sem nome não entram na comparação histórica
+    // Pra fins de liderança, considera só as ofertas nomeadas e habilitadas
+    // dessa consulta -- assim, excluir uma oferta recalcula quem "venceria"
+    // entre as que sobraram, em vez de manter o resultado antigo (que foi
+    // calculado com todas as ofertas, inclusive a excluída).
+    const considered = entry.offers.filter(o =>
+      isNamedOffer(o) && !excludedOfferKeys.has(o.name.trim().toLowerCase())
+    );
+    if (considered.length === 0) return;
+
+    const maxVet = Math.max(...considered.map(o => o.vet));
+
+    considered.forEach(o => {
       const key = o.name.trim().toLowerCase();
       if (!groups[key]){
         groups[key] = { displayName: o.name.trim(), leads: 0, total: 0, vets: [], points: [] };
@@ -1334,7 +1420,7 @@ function computeOfferStats(periodKey){
       g.total++;
       g.vets.push(o.vet);
       g.points.push({ t: entry.createdAt || 0, vet: o.vet });
-      if (o.name === entry.best) g.leads++;
+      if (o.vet === maxVet) g.leads++;
     });
   });
 
@@ -1386,29 +1472,63 @@ function renderStatsChips(){
   });
 }
 
+function renderOfferPills(){
+  const pillsEl = document.getElementById('offerPills');
+  const names = collectNamedOfferNames(statsPeriod);
+
+  if (names.length === 0){
+    pillsEl.innerHTML = '';
+    return;
+  }
+
+  pillsEl.innerHTML = names.map(({ key, name }) => {
+    const excluded = excludedOfferKeys.has(key);
+    const color = offerColorForName(name);
+    return `
+      <button type="button" class="offer-pill ${excluded ? 'excluded' : ''}" data-key="${escapeHtml(key)}" title="${excluded ? 'Reativar nas estatísticas' : 'Excluir das estatísticas'}">
+        <span class="dot" style="background:${color};"></span>${escapeHtml(name)}
+      </button>
+    `;
+  }).join('');
+
+  pillsEl.querySelectorAll('.offer-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      if (excludedOfferKeys.has(key)) excludedOfferKeys.delete(key);
+      else excludedOfferKeys.add(key);
+      saveExcludedOfferKeys();
+      renderStats();
+    });
+  });
+}
+
 function renderStats(){
   const statsContent = document.getElementById('statsContent');
 
   renderStatsChips();
+  renderOfferPills();
 
   if (history.length === 0){
     statsContent.innerHTML = '<p class="empty">Nenhuma consulta ainda.</p>';
     return;
   }
 
+  const allNames = collectNamedOfferNames(statsPeriod);
   const rows = computeOfferStats(statsPeriod);
   const eligible = rows.filter(r => r.total >= STATS_MIN_SAMPLE);
   const thin = rows.filter(r => r.total > 0 && r.total < STATS_MIN_SAMPLE);
 
   if (rows.length === 0){
-    statsContent.innerHTML = '<p class="empty">Nenhuma oferta com nome nesse período ainda.</p>';
+    statsContent.innerHTML = allNames.length > 0
+      ? '<p class="empty">Todas as ofertas desse período estão desabilitadas. Toque numa pílula acima pra reativar.</p>'
+      : '<p class="empty">Nenhuma oferta com nome nesse período ainda.</p>';
     return;
   }
 
   const maxRate = Math.max(...eligible.map(r => r.leadRate), 0.0001);
 
   let html = eligible.map((r, i) => {
-    const color = offerColor(i);
+    const color = offerColorForName(r.name);
     const stab = stabilityInfo(r.amplitude);
     const barWidth = (r.leadRate / maxRate) * 100;
     return `

@@ -74,6 +74,12 @@ Nunca aparece automaticamente ao mesmo tempo que o card de upsell de conta.
 | `privacidade_upsell` | Clique em "leia nosso termo" dentro do card de upsell |
 | `privacidade_rodape` | Clique em "Privacidade" no rodapé |
 | `feedback_rodape` | Clique em "Feedback" no rodapé |
+| `stats_filtro_hoje` | Clique no chip de período "Hoje" na aba Consistência histórica |
+| `stats_filtro_7d` | Clique no chip de período "7 dias" na aba Consistência histórica |
+| `stats_filtro_15d` | Clique no chip de período "15 dias" na aba Consistência histórica |
+| `stats_filtro_30d` | Clique no chip de período "30 dias" na aba Consistência histórica |
+| `stats_filtro_all` | Clique no chip de período "Sempre" na aba Consistência histórica |
+| `oferta_dessalva` | Oferta removida da conta pelo botão de salvar (des-salvar) |
 
 Todos os eventos são contagens agregadas e anônimas -- nenhum contém dado sobre o conteúdo das ofertas (nome, cotação, spread) ou identidade da conta.
 
