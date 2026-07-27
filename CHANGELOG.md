@@ -6,6 +6,16 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 > As versões 0.1.0 e 0.2.0 são retroativas: não foram numeradas no momento em que foram publicadas. O versionamento formal começa a partir da 0.3.0.
 
+## [0.5.1]
+
+### Corrigido
+- A barra de liderança na aba "Consistência histórica" era desenhada em escala relativa ao líder do ranking, fazendo a oferta em 1º lugar sempre aparecer com a barra 100% cheia, não importa se ela tivesse liderado em 40% ou 90% das comparações. Agora a barra reflete a porcentagem real (0–100%).
+
+### Alterado
+- Redesenho do card de ranking: porcentagem de liderança em destaque (com verde reservado só para o 1º lugar), separação visual entre "quem lidera" e os dados de apoio (tendência, VET médio, faixa, variação), e tooltips explicando "liderou em X%" e "variação" para quem ainda não conhece esses termos.
+- Sparkline de tendência do VET ampliado (de 84×26px para largura total do card, com linha de base e rótulo do período exibido).
+- Ofertas com menos de 3 comparações no período (amostra insuficiente) agora aparecem como um card apagado (borda tracejada, opacidade reduzida) ao final da lista, em vez de uma linha de texto solta — mantém o mesmo formato visual dos demais cards.
+
 ## [0.5.0]
 
 ### Adicionado
