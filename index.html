@@ -315,28 +315,6 @@
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
 
-  /* Quando não há nenhuma oferta cadastrada ainda, "+ Nova oferta" é a
-     ação principal da tela -- ganha o mesmo tratamento visual do CTA
-     primário (outline colorido, mais destaque), até a primeira oferta
-     ser adicionada. */
-  button.ghost.primary-empty-state{
-    color:var(--higlobe);
-    border:1.5px solid var(--higlobe);
-    font-size:13px;
-    padding:12px 20px;
-    width:100%;
-    text-align:center;
-  }
-  button.ghost.primary-empty-state:hover{color:var(--techfx);border-color:var(--techfx);}
-  @media (min-width: 640px){
-    button.ghost.primary-empty-state{
-      width:auto;
-      min-width:240px;
-      display:block;
-      margin:4px auto 20px;
-    }
-  }
-
   .upsell-card{
     position:relative;
     max-width:480px;
@@ -457,17 +435,23 @@
     background:var(--panel-hi);
     border:1px solid var(--line);
     border-radius:10px;
-    padding:14px;
+    padding:16px;
     margin-bottom:10px;
+  }
+  .stats-rank-card.is-thin{
+    border-style:dashed;
+    opacity:0.7;
   }
   .stats-rank-top{
     display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:6px;
   }
+  .stats-rank-left{display:flex;align-items:center;gap:10px;min-width:0;}
   .stats-rank-badge{
-    width:20px;height:20px;border-radius:50%;
+    width:22px;height:22px;border-radius:50%;
     background:var(--bg);border:1px solid var(--line);
     color:var(--ink-dim);
     font-size:11px;font-weight:600;
@@ -476,32 +460,46 @@
   }
   .stats-rank-badge.first{border-color:var(--win);color:var(--win);}
   .stats-rank-dot{width:8px;height:8px;border-radius:50%;flex:none;}
-  .stats-rank-name{font-size:14px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .stats-rank-rate{font-size:12px;color:var(--ink-dim);flex:none;}
-  .stats-rank-body{
-    display:grid;
-    grid-template-columns:1fr 84px;
-    gap:12px;
-    align-items:center;
+  .stats-rank-name{font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .stats-rank-right{text-align:right;flex:none;}
+  .stats-rank-pct{font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1;}
+  .stats-rank-pct.first{color:var(--win);}
+  .stats-rank-pct-label{font-size:10.5px;color:var(--ink-dim);margin-top:2px;}
+  .stats-rank-caption{
+    font-size:12px;color:var(--ink-dim);
+    display:flex;align-items:center;gap:5px;
+    margin:0 0 10px;
   }
   .stats-bar-track{
-    height:7px;border-radius:4px;
+    position:relative;
+    height:8px;border-radius:4px;
     background:var(--bg);
     overflow:hidden;
-    margin-bottom:8px;
+    margin-bottom:14px;
   }
   .stats-bar-fill{height:100%;border-radius:4px;}
-  .stats-rank-detail{
-    display:flex;flex-wrap:wrap;
-    gap:5px 12px;
-    font-size:11px;color:var(--ink-dim);
+  .stats-bar-tick{
+    position:absolute;left:50%;top:0;bottom:0;width:1px;
+    background:rgba(255,255,255,0.15);
   }
-  .stats-rank-detail strong{color:var(--ink);font-weight:600;}
+  .stats-rank-body{
+    display:grid;
+    grid-template-columns:1fr 130px;
+    gap:16px;
+    align-items:end;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  .stats-spark-label{font-size:10.5px;color:var(--ink-dim);margin-bottom:6px;}
+  .stats-detail-col{display:flex;flex-direction:column;gap:6px;font-size:11.5px;}
+  .stats-detail-row{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--ink-dim);}
+  .stats-detail-row strong{color:var(--ink);font-weight:600;}
+  .stats-detail-row .info{margin-left:4px;}
   .stats-low{color:var(--win);}
   .stats-mid{color:var(--warn);}
   .stats-high{color:var(--err);}
-  .stats-empty-sample{
-    font-size:11px;color:var(--ink-dim);font-style:italic;
+  @media (max-width: 480px){
+    .stats-rank-body{grid-template-columns:1fr;}
   }
   .primary-action{
     width:100%;
@@ -654,39 +652,6 @@
   }
   .modal-actions .danger-btn:hover{opacity:0.85;}
 #historyList{max-width:480px;margin:0 auto;}
-
-  .star-rating{
-    display:flex;gap:6px;justify-content:center;
-    margin:4px 0 16px;
-  }
-  .star-rating .star{
-    font-size:28px;line-height:1;cursor:pointer;
-    color:var(--line);
-    transition:color 0.15s;
-    -webkit-user-select:none;user-select:none;
-  }
-  .star-rating .star.filled{color:var(--warn);}
-  .feedback-textarea{
-    width:100%;
-    background:var(--bg);
-    border:1px solid var(--line);
-    border-radius:8px;
-    color:var(--ink);
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12.5px;
-    padding:10px 12px;
-    resize:vertical;
-    min-height:64px;
-    outline:none;
-    margin-bottom:6px;
-  }
-  .feedback-textarea:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
-  .feedback-anon-note{
-    font-size:10.5px;color:var(--ink-dim);margin:10px 0 16px;line-height:1.5;
-  }
-  .modal-actions .feedback-submit-btn:disabled{
-    background:var(--panel-hi);color:var(--ink-dim);box-shadow:none;cursor:not-allowed;
-  }
 </style>
 </head>
 <body>
@@ -727,8 +692,8 @@
     <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;margin-bottom:20px;">+ Nova oferta</button>
 
     <div class="amount-field">
-      <label for="amountInput">Quanto vai converter, na moeda estrangeira? (opcional) <span class="info" id="amountInfo" data-tip="O valor que você recebe na moeda estrangeira (USD, EUR, etc.) antes da conversão. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O valor que você recebe na moeda estrangeira (USD, EUR, etc.) antes da conversão. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
-      <input type="text" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00 (USD, EUR...)">
+      <label for="amountInput">Quanto você vai converter? (opcional) <span class="info" id="amountInfo" data-tip="O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
+      <input type="text" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00">
     </div>
 
     <button id="calcBtn" class="primary-action">Comparar ofertas</button>
@@ -771,7 +736,7 @@
   <footer>
     <p>Os dados desta sessão serão apagados ao fechar a aba.</p>
     <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026 · <span id="appVersion"></span></p>
-    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a> · <a href="#" id="feedbackFooterLink" data-goatcounter-click="feedback_rodape">Feedback</a></p>
+    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a></p>
   </footer>
 </div>
 
@@ -782,7 +747,7 @@
 </div>
 
 <script>
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.5.1';
 const STORAGE_KEY = 'cotae-public-session';
 const OFFER_COLORS = ['#4fc3ff', '#39e59d', '#e0a458', '#c084fc', '#f472b6', '#facc15'];
 
@@ -863,7 +828,7 @@ function renderSyncStatus(){
     accountBanner.classList.add('state-synced');
     syncDot.className = 'sync-dot synced';
     const timeStr = lastSyncedAt
-      ? new Date(lastSyncedAt).toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit' })
+      ? new Date(lastSyncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       : '';
     syncText.textContent = timeStr ? `Sincronizado às ${timeStr}` : 'Sincronizado';
   }
@@ -914,14 +879,8 @@ upsellCta.addEventListener('click', signInWithGoogle);
 
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalBox = document.getElementById('modalBox');
-// Callback opcional disparado quando o modal aberto no momento é fechado
-// sem confirmação/resposta (clique fora ou "cancelar"). Cada modal que
-// precisar reagir ao dispensar (ex: feedback, pra marcar o cooldown) seta
-// isso antes de abrir, e o reseta ao fechar por resposta positiva.
-let modalOnDismiss = null;
 
 function showConfirmModal({ title, message, confirmLabel, onConfirm }){
-  modalOnDismiss = null;
   modalBox.innerHTML = `
     <p class="modal-title">${title}</p>
     <p class="modal-message">${message}</p>
@@ -941,137 +900,16 @@ function showConfirmModal({ title, message, confirmLabel, onConfirm }){
   });
 }
 
-// Clicar fora do modal fecha -- vale para qualquer modal que usar este
-// componente genérico, agora e no futuro. Se houver um onDismiss pendente
-// (ex: modal de feedback), ele é disparado antes de fechar.
+// Clicar fora do modal cancela -- vale para qualquer modal que usar este
+// componente genérico, agora e no futuro.
 modalBackdrop.addEventListener('click', (e) => {
-  if (e.target === modalBackdrop){
-    modalBackdrop.classList.remove('open');
-    if (modalOnDismiss){
-      const fn = modalOnDismiss;
-      modalOnDismiss = null;
-      fn();
-    }
-  }
-});
-
-const userLocale = navigator.language || 'pt-BR';
-
-// --- Feedback (modal com estrelas) ---
-const FEEDBACK_KEY = 'cotae-feedback-state';
-const FEEDBACK_REDISMISS_DAYS = 7;
-let comparisonsThisSession = 0;
-
-function loadFeedbackState(){
-  try {
-    const raw = localStorage.getItem(FEEDBACK_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (err) {
-    return {};
-  }
-}
-function saveFeedbackState(state){
-  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(state));
-}
-
-function canAutoShowFeedback(){
-  const state = loadFeedbackState();
-  if (state.respondedAt) return false; // já deu feedback -- não insiste mais sozinho
-  if (state.dismissedAt){
-    const daysSince = (Date.now() - state.dismissedAt) / (1000 * 60 * 60 * 24);
-    if (daysSince < FEEDBACK_REDISMISS_DAYS) return false;
-  }
-  // Nunca empilha com o card de upsell -- um pedido de atenção por vez.
-  if (upsellCard.style.display === 'block') return false;
-  if (modalBackdrop.classList.contains('open')) return false;
-  return true;
-}
-
-function maybeAutoShowFeedback(context, delayMs){
-  if (!canAutoShowFeedback()) return;
-  setTimeout(() => {
-    if (canAutoShowFeedback()) showFeedbackModal(context);
-  }, delayMs != null ? delayMs : 2500);
-}
-
-function showFeedbackModal(context){
-  let selectedRating = 0;
-
-  modalBox.innerHTML = `
-    <p class="modal-title">Você achou o app útil?</p>
-    <div class="star-rating" id="feedbackStars">
-      ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}">★</span>`).join('')}
-    </div>
-    <textarea class="feedback-textarea" id="feedbackTextInput" placeholder="Quer contar mais alguma coisa? (opcional)"></textarea>
-    <p class="feedback-anon-note">Seu feedback é sempre anônimo, mesmo se você estiver logado -- não associamos isso à sua conta.</p>
-    <div class="modal-actions">
-      <button class="ghost" id="feedbackCancelBtn">Agora não</button>
-      <button class="feedback-submit-btn" id="feedbackSubmitBtn" disabled>Enviar</button>
-    </div>
-  `;
-  modalBackdrop.classList.add('open');
-
-  const starEls = modalBox.querySelectorAll('#feedbackStars .star');
-  const submitBtn = document.getElementById('feedbackSubmitBtn');
-
-  function paintStars(){
-    starEls.forEach(s => s.classList.toggle('filled', parseInt(s.dataset.value, 10) <= selectedRating));
-    submitBtn.disabled = selectedRating === 0;
-  }
-
-  starEls.forEach(s => {
-    s.addEventListener('click', () => {
-      selectedRating = parseInt(s.dataset.value, 10);
-      paintStars();
-    });
-  });
-
-  const close = (markDismissed) => {
-    modalBackdrop.classList.remove('open');
-    if (markDismissed){
-      const state = loadFeedbackState();
-      state.dismissedAt = Date.now();
-      saveFeedbackState(state);
-    }
-  };
-
-  modalOnDismiss = () => close(true);
-
-  document.getElementById('feedbackCancelBtn').addEventListener('click', () => close(true));
-
-  submitBtn.addEventListener('click', async () => {
-    if (selectedRating === 0) return;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando...';
-    try {
-      await submitFeedback({
-        rating: selectedRating,
-        text: document.getElementById('feedbackTextInput').value,
-        context
-      });
-      const state = loadFeedbackState();
-      state.respondedAt = Date.now();
-      saveFeedbackState(state);
-      modalOnDismiss = null;
-      modalBackdrop.classList.remove('open');
-    } catch (err) {
-      console.error('Erro ao enviar feedback:', err);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar';
-      alert('Não foi possível enviar agora. Tente de novo.');
-    }
-  });
-}
-
-document.getElementById('feedbackFooterLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  showFeedbackModal('manual');
+  if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
 });
 
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
-function fmt(n){ return n.toLocaleString(userLocale, { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
-function fmtCurrency(n){ return n.toLocaleString(userLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
+function fmtCurrency(n){ return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
 
 // Inputs numéricos aqui são type="text" (não type="number") justamente pra
@@ -1101,7 +939,7 @@ function buildRowHtml(offer, isBest, amount, colorIndex){
           <span class="name">${escapeHtml(offer.name)}</span>
           ${isBest ? '<span class="badge">★ melhor</span>' : ''}
         </div>
-        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString(userLocale)}%</div>
+        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString('pt-BR')}%</div>
         <div class="row-vet">VET ${fmt(offer.vet)}</div>
       </div>
       <div class="row-final">${finalHtml}</div>
@@ -1205,18 +1043,6 @@ async function clearAccountHistory(){
   await Promise.all(snapshot.docs.map(doc => doc.ref.delete()));
 }
 
-// Feedback é sempre anônimo -- de propósito, nunca associamos ao uid do
-// usuário, mesmo quando ele está logado, pra manter a mesma promessa de
-// privacidade em qualquer estado de conta.
-async function submitFeedback({ rating, text, context }){
-  await db.collection('feedback').add({
-    rating,
-    text: (text || '').trim(),
-    context: context || 'manual',
-    createdAt: Date.now()
-  });
-}
-
 function persistOffersState(){
   // Logado: cada oferta só é salva de verdade quando a pessoa clica no
   // ícone de salvar (💾) -- editar um campo não persiste sozinho.
@@ -1239,7 +1065,6 @@ function saveSession(){
 
 function renderOffers(){
   exampleCard.style.display = offers.length === 0 ? 'block' : 'none';
-  document.getElementById('addOfferBtn').classList.toggle('primary-empty-state', offers.length === 0);
 
   offersListEl.innerHTML = offers.map((o, i) => `
     <div class="offer-card" data-id="${o.id}">
@@ -1249,7 +1074,7 @@ function renderOffers(){
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
         <div class="offer-field quote-field">
-          <label>Cotação (na sua moeda) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa, na sua moeda local">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa, na sua moeda local</span></span></label>
+          <label>Cotação (R$) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
           <input type="text" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
         </div>
         <div class="offer-field spread-field">
@@ -1406,13 +1231,6 @@ function hideCalcError(){
   el.textContent = '';
 }
 
-function scrollToNewestHistoryCard(){
-  // O cálculo mais recente sempre entra no topo da lista (history.unshift),
-  // então o primeiro .history-card do DOM é o que acabou de ser gerado.
-  const card = historyList.querySelector('.history-card');
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
 function calculate(){
   if (offers.length === 0){
     // Rede de segurança -- na prática inalcançável, já que o botão fica
@@ -1456,8 +1274,8 @@ function calculate(){
   const amount = (!isNaN(rawAmount) && rawAmount > 0) ? rawAmount : null;
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString(userLocale);
-  const timeStr = now.toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const best = computed.find(v => v.vet === maxVet).name;
 
   const entry = { date: dateStr, time: timeStr, offers: computed, best, amount, skippedCount, createdAt: now.getTime() };
@@ -1466,7 +1284,6 @@ function calculate(){
     history.unshift(entry); // otimista -- já mostra antes da escrita confirmar
     renderHistory();
     renderStats();
-    scrollToNewestHistoryCard();
 
     syncState = 'syncing';
     renderSyncStatus();
@@ -1499,7 +1316,6 @@ function calculate(){
     saveSession();
     renderHistory();
     renderStats();
-    scrollToNewestHistoryCard();
   }
 
   const dismissState = loadUpsellState();
@@ -1512,13 +1328,6 @@ function calculate(){
   const n = computed.length;
   const band = n === 1 ? '1_oferta' : n === 2 ? '2_ofertas' : n === 3 ? '3_ofertas' : '4mais_ofertas';
   window.goatcounter && window.goatcounter.count({ path: 'calculo_sucesso_' + band, event: true });
-
-  comparisonsThisSession++;
-  // Só na segunda comparação -- na primeira, a pessoa mal viu o card de
-  // resultado ainda, não teria opinião formada, e seria intrusivo demais.
-  if (comparisonsThisSession === 2){
-    maybeAutoShowFeedback('segunda_comparacao');
-  }
 }
 
 function escapeHtml(str){
@@ -1603,7 +1412,7 @@ function collectNamedOfferNames(periodKey){
   });
   return Object.keys(seen)
     .map(key => ({ key, name: seen[key] }))
-    .sort((a, b) => a.name.localeCompare(b.name, userLocale));
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 }
 
 function computeOfferStats(periodKey){
@@ -1656,18 +1465,28 @@ function buildSparklineSvg(values, color){
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
-  const w = 84, h = 26, pad = 3;
+  const w = 200, h = 56, pad = 4;
+  const baseY = h - pad;
   const step = (w - pad * 2) / (values.length - 1);
   const points = values.map((v, i) => {
     const x = pad + i * step;
-    const y = pad + (1 - (v - min) / span) * (h - pad * 2);
+    const y = pad + (1 - (v - min) / span) * (baseY - pad);
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
   const last = points.split(' ').pop().split(',');
-  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="${pad}" y1="${baseY}" x2="${w - pad}" y2="${baseY}" stroke="var(--line)" stroke-width="1"/>
     <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="${color}"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${color}"/>
   </svg>`;
+}
+
+// Legenda curta do período em uso, pro rótulo acima do gráfico de tendência.
+function statsPeriodCaption(periodKey){
+  const period = STATS_PERIODS.find(p => p.key === periodKey) || STATS_PERIODS[3];
+  if (period.key === 'today') return 'hoje';
+  if (period.days === null) return 'todo o período';
+  return `últimos ${period.days} dias`;
 }
 
 function renderStatsChips(){
@@ -1736,42 +1555,93 @@ function renderStats(){
     return;
   }
 
-  const maxRate = Math.max(...eligible.map(r => r.leadRate), 0.0001);
+  const periodCaption = statsPeriodCaption(statsPeriod);
 
   let html = eligible.map((r, i) => {
     const color = offerColorForName(r.name);
     const stab = stabilityInfo(r.amplitude);
-    const barWidth = (r.leadRate / maxRate) * 100;
+    const isFirst = i === 0;
+    // Escala absoluta (0-100%), não mais relativa ao líder -- do jeito que
+    // era antes, a oferta líder sempre aparecia com a barra 100% cheia,
+    // não importa se ela tivesse liderado em 40% ou 90% das comparações.
+    const barWidth = (r.leadRate * 100).toFixed(1);
     return `
       <div class="stats-rank-card">
         <div class="stats-rank-top">
-          <span class="stats-rank-badge ${i === 0 ? 'first' : ''}">${i + 1}</span>
-          <span class="stats-rank-dot" style="background:${color};"></span>
-          <span class="stats-rank-name">${escapeHtml(r.name)}</span>
-          <span class="stats-rank-rate">liderou em ${(r.leadRate * 100).toFixed(0)}% (${r.leads}/${r.total})</span>
+          <div class="stats-rank-left">
+            <span class="stats-rank-badge ${isFirst ? 'first' : ''}">${i + 1}</span>
+            <span class="stats-rank-dot" style="background:${color};"></span>
+            <span class="stats-rank-name">${escapeHtml(r.name)}</span>
+          </div>
+          <div class="stats-rank-right">
+            <div class="stats-rank-pct ${isFirst ? 'first' : ''}">${(r.leadRate * 100).toFixed(0)}%</div>
+            <div class="stats-rank-pct-label">das comparações</div>
+          </div>
+        </div>
+        <p class="stats-rank-caption">
+          Liderou em ${r.leads} de ${r.total} comparações
+          <span class="info" data-tip="Em quantas comparações essa oferta teve o melhor VET, no período selecionado.">i<span class="bubble">Em quantas comparações essa oferta teve o melhor VET, no período selecionado.</span></span>
+        </p>
+        <div class="stats-bar-track">
+          <div class="stats-bar-fill" style="width:${barWidth}%;background:${color};"></div>
+          <div class="stats-bar-tick"></div>
         </div>
         <div class="stats-rank-body">
           <div>
-            <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barWidth}%;background:${color};"></div></div>
-            <div class="stats-rank-detail">
-              <span>VET médio <strong>${fmt(r.avg)}</strong></span>
-              <span>Faixa <strong>${fmt(r.min)}–${fmt(r.max)}</strong></span>
-              <span class="${stab.cls}">${stab.label}</span>
+            <div class="stats-spark-label">Tendência do VET · ${periodCaption}</div>
+            ${buildSparklineSvg(r.sparkline, color)}
+          </div>
+          <div class="stats-detail-col">
+            <div class="stats-detail-row"><span>VET médio</span><strong>${fmt(r.avg)}</strong></div>
+            <div class="stats-detail-row"><span>Faixa</span><span>${fmt(r.min)}–${fmt(r.max)}</span></div>
+            <div class="stats-detail-row">
+              <span>Variação</span>
+              <span class="${stab.cls}">${stab.label}
+                <span class="info" data-tip="Baixa variação: o VET dessa oferta mudou pouco nesse período (mais previsível). Alta variação: o VET oscilou bastante.">i<span class="bubble">Baixa variação: o VET dessa oferta mudou pouco nesse período (mais previsível). Alta variação: o VET oscilou bastante.</span></span>
+              </span>
             </div>
           </div>
-          ${buildSparklineSvg(r.sparkline, color)}
         </div>
       </div>
     `;
   }).join('');
 
+  // Ofertas com poucas comparações aparecem sempre por último, num card
+  // apagado (borda tracejada, opacidade reduzida) em vez de uma linha de
+  // texto solta -- sinaliza "ainda não é um resultado confiável" sem
+  // desaparecer da lista nem confundir com um resultado de verdade.
   if (thin.length > 0){
     html += thin.map(r => `
-      <p class="stats-empty-sample">${escapeHtml(r.name)}: dados insuficientes nesse período (${r.total} de ${STATS_MIN_SAMPLE} comparações mínimas).</p>
+      <div class="stats-rank-card is-thin">
+        <div class="stats-rank-top">
+          <div class="stats-rank-left">
+            <span class="stats-rank-badge">–</span>
+            <span class="stats-rank-dot" style="background:${offerColorForName(r.name)};"></span>
+            <span class="stats-rank-name">${escapeHtml(r.name)}</span>
+          </div>
+          <div class="stats-rank-right">
+            <div class="stats-rank-pct">—</div>
+            <div class="stats-rank-pct-label">dados insuficientes</div>
+          </div>
+        </div>
+        <p class="stats-rank-caption" style="margin-bottom:0;">
+          ${r.total} de ${STATS_MIN_SAMPLE} comparações mínimas no período
+          <span class="info" data-tip="Com poucas comparações, o ranking dessa oferta ainda não é confiável. Amplie o período ou espere mais consultas.">i<span class="bubble">Com poucas comparações, o ranking dessa oferta ainda não é confiável. Amplie o período ou espere mais consultas.</span></span>
+        </p>
+      </div>
     `).join('');
   }
 
   statsContent.innerHTML = html;
+
+  statsContent.querySelectorAll('.info').forEach(info => {
+    info.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = info.classList.contains('open');
+      document.querySelectorAll('.info.open').forEach(el => el.classList.remove('open'));
+      if (!wasOpen) info.classList.add('open');
+    });
+  });
 }
 
 function renderHistory(){
@@ -1956,9 +1826,6 @@ auth.onAuthStateChanged(async (user) => {
 
     if (isNewLogin){
       window.goatcounter && window.goatcounter.count({ path: 'conta_login_sucesso', event: true });
-      // Um pouco de atraso -- a pessoa acabou de voltar do popup/redirect de
-      // login e ainda está se reorientando na tela.
-      maybeAutoShowFeedback('login', 3000);
     }
 
     renderOffers();
