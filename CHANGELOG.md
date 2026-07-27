@@ -6,6 +6,18 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 > As versões 0.1.0 e 0.2.0 são retroativas: não foram numeradas no momento em que foram publicadas. O versionamento formal começa a partir da 0.3.0.
 
+## [0.5.0]
+
+### Adicionado
+- Modal de feedback (nota de 1 a 5 estrelas + comentário livre opcional), acessível pelo link "Feedback" no rodapé. Gravado numa coleção separada no Firestore (`feedback`), sempre de forma anônima -- nunca associado à conta, mesmo estando logado.
+- Modal de feedback também aparece automaticamente (no máximo uma vez até responder ou dispensar, com cooldown de 7 dias após dispensar): depois da segunda comparação bem-sucedida da sessão, ou pouco depois de entrar numa conta. Nunca aparece junto com o card de upsell de conta.
+- Auto-scroll até o card de comparação recém-gerado, logo após o cálculo, pra direcionar a atenção pro resultado.
+- Destaque visual no botão "+ Nova oferta" (outline colorido) quando ainda não há nenhuma oferta cadastrada -- a ação principal da tela nesse momento, em vez do botão "Comparar" (que seguia mais chamativo mesmo desabilitado).
+
+### Alterado
+- Removidas todas as referências a R$ (Real) da interface -- rótulos genéricos agora ("Cotação (na sua moeda)"), com o campo de valor a converter deixando explícito que se refere à moeda estrangeira (USD, EUR, etc.), não à moeda local. Preparação pro público latino-americano além do Brasil.
+- Formatação de números (separador decimal, datas e horas) passou a seguir o idioma configurado no navegador da pessoa (`navigator.language`) em vez de fixar `pt-BR`, com esse valor como fallback.
+
 ## [0.4.0]
 
 ### Adicionado
