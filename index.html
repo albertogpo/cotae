@@ -314,6 +314,11 @@
     box-shadow:none;
   }
   button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
+  button.ghost.emphasized{
+    color:var(--higlobe);
+    border-color:var(--higlobe);
+  }
+  button.ghost.emphasized:hover{color:var(--techfx);border-color:var(--techfx);}
 
   .upsell-card{
     position:relative;
@@ -655,6 +660,32 @@
     margin-top:0;
   }
   .modal-actions .danger-btn:hover{opacity:0.85;}
+
+  .feedback-stars{
+    display:flex;gap:6px;margin-bottom:14px;
+  }
+  .star-btn{
+    background:none;border:none;box-shadow:none;
+    font-size:26px;line-height:1;padding:0;margin:0;
+    color:var(--line);cursor:pointer;
+    text-transform:none;letter-spacing:normal;font-weight:400;
+  }
+  .star-btn:hover{opacity:1;color:var(--ink-dim);}
+  .star-btn.filled{color:var(--warn);}
+  .feedback-textarea{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:9px 10px;
+    outline:none;
+    resize:vertical;
+    margin-bottom:16px;
+  }
+  .feedback-textarea:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
 #historyList{max-width:480px;margin:0 auto;}
 </style>
 </head>
@@ -696,7 +727,7 @@
     <button class="ghost" id="addOfferBtn" data-goatcounter-click="oferta_adicionada" style="margin-top:4px;margin-bottom:20px;">+ Nova oferta</button>
 
     <div class="amount-field">
-      <label for="amountInput">Quanto você vai converter? (opcional) <span class="info" id="amountInfo" data-tip="O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
+      <label for="amountInput">Quanto você vai converter, na moeda estrangeira? (opcional) <span class="info" id="amountInfo" data-tip="Informe o valor na moeda estrangeira (USD, EUR, etc.) que você vai converter -- não na sua moeda local. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado">i<span class="bubble">Informe o valor na moeda estrangeira (USD, EUR, etc.) que você vai converter -- não na sua moeda local. O mesmo valor é usado pra calcular o resultado de todas as ofertas, pra comparar lado a lado</span></span></label>
       <input type="text" inputmode="decimal" id="amountInput" placeholder="ex: 1000,00">
     </div>
 
@@ -740,7 +771,7 @@
   <footer>
     <p>Os dados desta sessão serão apagados ao fechar a aba.</p>
     <p>Desenvolvido por Ser Multimídia Soluções Digitais — © 2026 · <span id="appVersion"></span></p>
-    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a></p>
+    <p><a href="mailto:albertogpo+cotae@gmail.com">Contato</a> · <a href="privacidade.html" data-goatcounter-click="privacidade_rodape">Privacidade</a> · <a href="#" id="feedbackLink" data-goatcounter-click="feedback_rodape">Feedback</a></p>
   </footer>
 </div>
 
@@ -750,8 +781,31 @@
   <div class="modal" id="modalBox"></div>
 </div>
 
+<div class="modal-backdrop" id="feedbackModalBackdrop">
+  <div class="modal" id="feedbackModalBox">
+    <p class="modal-title">Dar feedback</p>
+    <p class="modal-message">Sua opinião ajuda a priorizar melhorias no Cotaê. O envio é sempre anônimo, mesmo estando logado.</p>
+    <div class="feedback-stars" id="feedbackStars">
+      <button type="button" class="star-btn" data-value="1" title="1 estrela">★</button>
+      <button type="button" class="star-btn" data-value="2" title="2 estrelas">★</button>
+      <button type="button" class="star-btn" data-value="3" title="3 estrelas">★</button>
+      <button type="button" class="star-btn" data-value="4" title="4 estrelas">★</button>
+      <button type="button" class="star-btn" data-value="5" title="5 estrelas">★</button>
+    </div>
+    <textarea id="feedbackText" class="feedback-textarea" placeholder="Comentário (opcional)" rows="3"></textarea>
+    <div class="modal-actions">
+      <button class="ghost" id="feedbackCancelBtn">Agora não</button>
+      <button id="feedbackSubmitBtn" disabled>Enviar</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const APP_VERSION = '0.5.2';
+const APP_VERSION = '0.5.3';
+// Formatação de números, datas e horas segue o idioma do navegador da pessoa,
+// em vez de fixar 'pt-BR' -- com esse valor como fallback caso o navegador
+// não informe (ou informe algo vazio/inesperado).
+const APP_LOCALE = navigator.language || 'pt-BR';
 const STORAGE_KEY = 'cotae-public-session';
 const OFFER_COLORS = ['#4fc3ff', '#39e59d', '#e0a458', '#c084fc', '#f472b6', '#facc15'];
 
@@ -832,7 +886,7 @@ function renderSyncStatus(){
     accountBanner.classList.add('state-synced');
     syncDot.className = 'sync-dot synced';
     const timeStr = lastSyncedAt
-      ? new Date(lastSyncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      ? new Date(lastSyncedAt).toLocaleTimeString(APP_LOCALE, { hour: '2-digit', minute: '2-digit' })
       : '';
     syncText.textContent = timeStr ? `Sincronizado às ${timeStr}` : 'Sincronizado';
   }
@@ -881,6 +935,117 @@ upsellDismiss.addEventListener('click', () => {
 
 upsellCta.addEventListener('click', signInWithGoogle);
 
+// --- Feedback ---
+const FEEDBACK_KEY = 'cotae-feedback-state';
+const FEEDBACK_REAPPEAR_DAYS = 7;
+let feedbackShownThisSession = false;
+let sessionCalcCount = 0;
+let feedbackRating = 0;
+
+function loadFeedbackState(){
+  try {
+    const raw = localStorage.getItem(FEEDBACK_KEY);
+    return raw ? JSON.parse(raw) : null; // null = nunca respondeu nem dispensou
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveFeedbackState(state){
+  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(state));
+}
+
+function canAutoShowFeedback(){
+  if (feedbackShownThisSession) return false; // no máximo uma vez por sessão
+  const state = loadFeedbackState();
+  if (!state) return true;
+  if (state.action === 'submitted') return false; // já respondeu -- não insiste
+  if (state.action === 'dismissed'){
+    const daysSince = (Date.now() - state.at) / (1000 * 60 * 60 * 24);
+    return daysSince >= FEEDBACK_REAPPEAR_DAYS;
+  }
+  return true;
+}
+
+function maybeAutoShowFeedback(){
+  if (!canAutoShowFeedback()) return;
+  // Nunca aparece automaticamente ao mesmo tempo que o card de upsell de conta.
+  if (shouldShowUpsell()) return;
+  feedbackShownThisSession = true;
+  openFeedbackModal();
+}
+
+const feedbackModalBackdrop = document.getElementById('feedbackModalBackdrop');
+const feedbackStars = document.getElementById('feedbackStars');
+const feedbackText = document.getElementById('feedbackText');
+const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
+const feedbackCancelBtn = document.getElementById('feedbackCancelBtn');
+const feedbackLink = document.getElementById('feedbackLink');
+
+function renderFeedbackStars(){
+  feedbackStars.querySelectorAll('.star-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.value, 10);
+    btn.classList.toggle('filled', val <= feedbackRating);
+  });
+  feedbackSubmitBtn.disabled = feedbackRating === 0;
+}
+
+feedbackStars.querySelectorAll('.star-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    feedbackRating = parseInt(btn.dataset.value, 10);
+    renderFeedbackStars();
+  });
+});
+
+function openFeedbackModal(){
+  feedbackRating = 0;
+  feedbackText.value = '';
+  feedbackSubmitBtn.disabled = false;
+  renderFeedbackStars();
+  feedbackModalBackdrop.classList.add('open');
+}
+
+function closeFeedbackModal(){
+  feedbackModalBackdrop.classList.remove('open');
+}
+
+feedbackLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  openFeedbackModal();
+});
+
+feedbackCancelBtn.addEventListener('click', () => {
+  saveFeedbackState({ action: 'dismissed', at: Date.now() });
+  closeFeedbackModal();
+});
+
+feedbackModalBackdrop.addEventListener('click', (e) => {
+  if (e.target === feedbackModalBackdrop){
+    saveFeedbackState({ action: 'dismissed', at: Date.now() });
+    closeFeedbackModal();
+  }
+});
+
+feedbackSubmitBtn.addEventListener('click', async () => {
+  if (feedbackRating === 0) return;
+  feedbackSubmitBtn.disabled = true;
+  try {
+    // Coleção separada, sem qualquer campo de identidade -- sempre anônimo,
+    // mesmo com currentUser presente.
+    await db.collection('feedback').add({
+      rating: feedbackRating,
+      comment: feedbackText.value.trim(),
+      createdAt: Date.now()
+    });
+    saveFeedbackState({ action: 'submitted', at: Date.now() });
+    closeFeedbackModal();
+  } catch (err) {
+    console.error('Erro ao enviar feedback:', err);
+    alert('Não foi possível enviar o feedback agora. Tente de novo.');
+    feedbackSubmitBtn.disabled = false;
+  }
+});
+
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalBox = document.getElementById('modalBox');
 
@@ -912,8 +1077,8 @@ modalBackdrop.addEventListener('click', (e) => {
 
 function uid(){ return 'o-' + Math.random().toString(36).slice(2, 9); }
 function offerColor(i){ return OFFER_COLORS[i % OFFER_COLORS.length]; }
-function fmt(n){ return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
-function fmtCurrency(n){ return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmt(n){ return n.toLocaleString(APP_LOCALE, { minimumFractionDigits: 4, maximumFractionDigits: 4 }); }
+function fmtCurrency(n){ return n.toLocaleString(APP_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function computeVET(quote, spread){ return quote * (1 - spread); }
 
 // Inputs numéricos aqui são type="text" (não type="number") justamente pra
@@ -941,7 +1106,7 @@ function buildRowHtml(offer, isBest, amount, colorIndex){
       <div class="row-name">${escapeHtml(offer.name)}</div>
       <div class="row-badge">${isBest ? '★ melhor' : ''}</div>
       <div class="row-details">
-        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString('pt-BR')}%</div>
+        <div class="row-detail">Cotação ${fmt(offer.quote)} · Spread ${(offer.spread * 100).toLocaleString(APP_LOCALE)}%</div>
         <div class="row-vet">VET ${fmt(offer.vet)}</div>
       </div>
       <div class="row-final">${finalHtml}</div>
@@ -1067,6 +1232,7 @@ function saveSession(){
 
 function renderOffers(){
   exampleCard.style.display = offers.length === 0 ? 'block' : 'none';
+  document.getElementById('addOfferBtn').classList.toggle('emphasized', offers.length === 0);
 
   offersListEl.innerHTML = offers.map((o, i) => `
     <div class="offer-card" data-id="${o.id}">
@@ -1076,7 +1242,7 @@ function renderOffers(){
           <input type="text" class="name-input" value="${(o.name || '').replace(/"/g, '&quot;')}" placeholder="ex: Wise">
         </div>
         <div class="offer-field quote-field">
-          <label>Cotação (R$) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
+          <label>Cotação (na sua moeda) <span class="info" data-tip="Valor que a plataforma está oferecendo agora, antes da taxa">i<span class="bubble">Valor que a plataforma está oferecendo agora, antes da taxa</span></span></label>
           <input type="text" inputmode="decimal" class="quote-input" value="${o.quote != null ? o.quote : ''}" placeholder="5,4200">
         </div>
         <div class="offer-field spread-field">
@@ -1276,8 +1442,8 @@ function calculate(){
   const amount = (!isNaN(rawAmount) && rawAmount > 0) ? rawAmount : null;
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString('pt-BR');
-  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = now.toLocaleDateString(APP_LOCALE);
+  const timeStr = now.toLocaleTimeString(APP_LOCALE, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const best = computed.find(v => v.vet === maxVet).name;
 
   const entry = { date: dateStr, time: timeStr, offers: computed, best, amount, skippedCount, createdAt: now.getTime() };
@@ -1320,12 +1486,22 @@ function calculate(){
     renderStats();
   }
 
+  const newestCard = historyList.querySelector('.history-card');
+  if (newestCard){
+    newestCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   const dismissState = loadUpsellState();
   if (dismissState){
     dismissState.calcsSinceDismiss = (dismissState.calcsSinceDismiss || 0) + 1;
     saveUpsellState(dismissState);
   }
   renderUpsell();
+
+  sessionCalcCount++;
+  if (sessionCalcCount === 2){
+    maybeAutoShowFeedback();
+  }
 
   const n = computed.length;
   const band = n === 1 ? '1_oferta' : n === 2 ? '2_ofertas' : n === 3 ? '3_ofertas' : '4mais_ofertas';
@@ -1414,7 +1590,7 @@ function collectNamedOfferNames(periodKey){
   });
   return Object.keys(seen)
     .map(key => ({ key, name: seen[key] }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    .sort((a, b) => a.name.localeCompare(b.name, APP_LOCALE));
 }
 
 function computeOfferStats(periodKey){
@@ -1829,6 +2005,7 @@ auth.onAuthStateChanged(async (user) => {
 
     if (isNewLogin){
       window.goatcounter && window.goatcounter.count({ path: 'conta_login_sucesso', event: true });
+      setTimeout(maybeAutoShowFeedback, 3000);
     }
 
     renderOffers();
