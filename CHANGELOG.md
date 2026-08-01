@@ -6,6 +6,12 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 > As versões 0.1.0 e 0.2.0 são retroativas: não foram numeradas no momento em que foram publicadas. O versionamento formal começa a partir da 0.3.0.
 
+## [0.5.2]
+
+### Corrigido
+- Card de comparação: quando o valor convertido estava presente, ele ficava centralizado na altura toda do card em vez de alinhado à base junto com o VET. Layout do card virou grid de 2 linhas: nome + "★ melhor" sempre alinhados no topo; cotação/spread/VET à esquerda e valor final à direita, ambos ancorados na mesma base, com ou sem o badge de melhor oferta.
+- Tooltip do campo "quanto você vai converter": o clique no ícone de informação abria e fechava o tooltip no mesmo instante, porque o `<label>` associado ao campo disparava um clique automático no input por baixo, que subia até o listener global e fechava o tooltip. Corrigido com `preventDefault()` no clique do ícone.
+
 ## [0.5.1]
 
 ### Corrigido
