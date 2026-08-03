@@ -20,7 +20,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -249,6 +248,7 @@
   .offer-field label{
     display:flex;align-items:center;gap:4px;
     font-size:11px;color:var(--ink-dim);margin-bottom:6px;
+    min-height:2.2rem;
   }
   .offer-field input{
     width:100%;
@@ -622,7 +622,7 @@
     padding-top:16px;
     display:flex;flex-direction:column;gap:4px;
   }
-  footer p{font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
+  footer {font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
   footer a{color:var(--techfx);text-decoration:underline;}
   footer a:hover{color:var(--higlobe);}
 
@@ -801,7 +801,7 @@
 </div>
 
 <script>
-const APP_VERSION = '0.5.3';
+const APP_VERSION = '0.5.4';
 // Formatação de números, datas e horas segue o idioma do navegador da pessoa,
 // em vez de fixar 'pt-BR' -- com esse valor como fallback caso o navegador
 // não informe (ou informe algo vazio/inesperado).
