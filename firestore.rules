@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Cotaê -- Regras de segurança do Firestore
+//
+// Modelo de dados:
+//   usuarios/{uid}/ofertas/{id}
+//   usuarios/{uid}/historico/{id}
+//
+// Princípio único, aplicado a tudo dentro de usuarios/{uid}/**:
+// só o próprio dono (uid autenticado == uid do caminho) pode ler ou escrever.
+// Qualquer outro usuário autenticado, ou visitante não autenticado, é negado
+// por padrão -- o Firestore nega tudo que não for explicitamente permitido
+// por uma regra abaixo.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /usuarios/{userId}/{document=**} {
+      allow read, write: if request.auth != null
+                          && request.auth.uid == userId;
+    }
+
+    // Feedback -- coleção de nível raiz, intencionalmente anônima (não tem
+    // uid nem qualquer campo de identidade). Por isso não dá pra exigir
+    // autenticação aqui: qualquer visitante, logado ou não, pode enviar.
+    // Ninguém pode ler, editar ou apagar pelo client -- só criar um
+    // documento novo. Sem essa regra, toda escrita em feedback/{id} é
+    // negada por padrão, que é o bug que estamos corrigindo agora.
+    match /feedback/{feedbackId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+  }
+}
