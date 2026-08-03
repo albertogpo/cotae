@@ -6,6 +6,22 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 > As versões 0.1.0 e 0.2.0 são retroativas: não foram numeradas no momento em que foram publicadas. O versionamento formal começa a partir da 0.3.0.
 
+## [0.5.4]
+
+### Corrigido
+- O rótulo "Cotação (na sua moeda)" quebrava em duas linhas no card de oferta, desalinhando os campos de cotação e spread em relação ao campo de nome. Os três rótulos agora reservam a mesma altura mínima (equivalente a duas linhas), mantendo os campos alinhados independentemente de quebra de texto.
+
+## [0.5.3]
+
+### Adicionado
+- Modal de feedback (5 estrelas + comentário opcional), com link no rodapé, gravado em `feedback` no Firestore sem nenhum campo de identidade. Abre automaticamente uma vez por sessão após a 2ª comparação bem-sucedida ou ~3s após um novo login, com cooldown de 7 dias caso dispensado (`localStorage['cotae-feedback-state']`), nunca simultaneamente ao card de upsell de conta.
+- Destaque visual (`.emphasized`, outline colorido) no botão "+ Nova oferta" enquanto não há nenhuma oferta cadastrada, voltando ao estilo ghost normal assim que a primeira é criada.
+- Auto-scroll até o card de comparação mais recente (`scrollIntoView({ behavior: 'smooth', block: 'center' })`) logo após o cálculo.
+
+### Alterado
+- Removidas as referências a R$ da interface: `fmtCurrency()` não prefixa mais o símbolo, o rótulo do campo de cotação virou "Cotação (na sua moeda)", e o rótulo/tooltip do campo de valor deixam explícito que se trata da moeda estrangeira (USD, EUR, etc.), não da moeda local.
+- Formatação de números, datas e horas passou a seguir o idioma do navegador da pessoa via nova constante `APP_LOCALE = navigator.language || 'pt-BR'`, substituindo as 6 chamadas que estavam fixas em `'pt-BR'`.
+
 ## [0.5.2]
 
 ### Corrigido
