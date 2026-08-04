@@ -686,6 +686,8 @@
     margin-bottom:16px;
   }
   .feedback-textarea:focus{border-color:var(--techfx);box-shadow:0 0 0 3px rgba(79,195,255,0.15);}
+  .modal-title.win{color:var(--win);}
+  .modal-title.err{color:var(--err);}
 #historyList{max-width:480px;margin:0 auto;}
 </style>
 </head>
@@ -783,25 +785,32 @@
 
 <div class="modal-backdrop" id="feedbackModalBackdrop">
   <div class="modal" id="feedbackModalBox">
-    <p class="modal-title">Dar feedback</p>
-    <p class="modal-message">Sua opinião ajuda a priorizar melhorias no Cotaê. O envio é sempre anônimo, mesmo estando logado.</p>
-    <div class="feedback-stars" id="feedbackStars">
-      <button type="button" class="star-btn" data-value="1" title="1 estrela">★</button>
-      <button type="button" class="star-btn" data-value="2" title="2 estrelas">★</button>
-      <button type="button" class="star-btn" data-value="3" title="3 estrelas">★</button>
-      <button type="button" class="star-btn" data-value="4" title="4 estrelas">★</button>
-      <button type="button" class="star-btn" data-value="5" title="5 estrelas">★</button>
+    <div id="feedbackFormContent">
+      <p class="modal-title">Dar feedback</p>
+      <p class="modal-message">Sua opinião ajuda a priorizar melhorias no Cotaê. O envio é sempre anônimo, mesmo estando logado.</p>
+      <div class="feedback-stars" id="feedbackStars">
+        <button type="button" class="star-btn" data-value="1" title="1 estrela">★</button>
+        <button type="button" class="star-btn" data-value="2" title="2 estrelas">★</button>
+        <button type="button" class="star-btn" data-value="3" title="3 estrelas">★</button>
+        <button type="button" class="star-btn" data-value="4" title="4 estrelas">★</button>
+        <button type="button" class="star-btn" data-value="5" title="5 estrelas">★</button>
+      </div>
+      <textarea id="feedbackText" class="feedback-textarea" placeholder="Comentário (opcional)" rows="3"></textarea>
+      <div class="modal-actions">
+        <button class="ghost" id="feedbackCancelBtn">Agora não</button>
+        <button id="feedbackSubmitBtn" disabled>Enviar</button>
+      </div>
     </div>
-    <textarea id="feedbackText" class="feedback-textarea" placeholder="Comentário (opcional)" rows="3"></textarea>
-    <div class="modal-actions">
-      <button class="ghost" id="feedbackCancelBtn">Agora não</button>
-      <button id="feedbackSubmitBtn" disabled>Enviar</button>
+    <div id="feedbackResultContent" style="display:none;">
+      <p class="modal-title" id="feedbackResultTitle"></p>
+      <p class="modal-message" id="feedbackResultMessage"></p>
+      <div class="modal-actions" id="feedbackResultActions"></div>
     </div>
   </div>
 </div>
 
 <script>
-const APP_VERSION = '0.5.4';
+const APP_VERSION = '0.5.5';
 // Formatação de números, datas e horas segue o idioma do navegador da pessoa,
 // em vez de fixar 'pt-BR' -- com esse valor como fallback caso o navegador
 // não informe (ou informe algo vazio/inesperado).
@@ -976,6 +985,11 @@ function maybeAutoShowFeedback(){
 }
 
 const feedbackModalBackdrop = document.getElementById('feedbackModalBackdrop');
+const feedbackFormContent = document.getElementById('feedbackFormContent');
+const feedbackResultContent = document.getElementById('feedbackResultContent');
+const feedbackResultTitle = document.getElementById('feedbackResultTitle');
+const feedbackResultMessage = document.getElementById('feedbackResultMessage');
+const feedbackResultActions = document.getElementById('feedbackResultActions');
 const feedbackStars = document.getElementById('feedbackStars');
 const feedbackText = document.getElementById('feedbackText');
 const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
@@ -1002,11 +1016,39 @@ function openFeedbackModal(){
   feedbackText.value = '';
   feedbackSubmitBtn.disabled = false;
   renderFeedbackStars();
+  feedbackFormContent.style.display = '';
+  feedbackResultContent.style.display = 'none';
   feedbackModalBackdrop.classList.add('open');
 }
 
 function closeFeedbackModal(){
   feedbackModalBackdrop.classList.remove('open');
+}
+
+// Mostra o resultado do envio dentro do próprio modal, no lugar do
+// formulário -- sucesso fecha sozinho depois de um instante; erro dá a
+// opção de voltar pro formulário sem perder nota e comentário já digitados.
+function showFeedbackResult(type){
+  feedbackFormContent.style.display = 'none';
+  feedbackResultContent.style.display = 'block';
+  feedbackResultTitle.classList.remove('win', 'err');
+
+  if (type === 'success'){
+    feedbackResultTitle.textContent = '✓ Feedback enviado';
+    feedbackResultTitle.classList.add('win');
+    feedbackResultMessage.textContent = 'Obrigado! Sua opinião ajuda a priorizar melhorias no Cotaê.';
+    feedbackResultActions.innerHTML = '';
+    setTimeout(closeFeedbackModal, 1800);
+  } else {
+    feedbackResultTitle.textContent = '✕ Não foi possível enviar';
+    feedbackResultTitle.classList.add('err');
+    feedbackResultMessage.textContent = 'Verifique sua conexão e tente novamente.';
+    feedbackResultActions.innerHTML = '<button class="ghost" id="feedbackBackBtn">Voltar</button>';
+    document.getElementById('feedbackBackBtn').addEventListener('click', () => {
+      feedbackFormContent.style.display = '';
+      feedbackResultContent.style.display = 'none';
+    });
+  }
 }
 
 feedbackLink.addEventListener('click', (e) => {
@@ -1038,10 +1080,10 @@ feedbackSubmitBtn.addEventListener('click', async () => {
       createdAt: Date.now()
     });
     saveFeedbackState({ action: 'submitted', at: Date.now() });
-    closeFeedbackModal();
+    showFeedbackResult('success');
   } catch (err) {
     console.error('Erro ao enviar feedback:', err);
-    alert('Não foi possível enviar o feedback agora. Tente de novo.');
+    showFeedbackResult('error');
     feedbackSubmitBtn.disabled = false;
   }
 });
@@ -1550,7 +1592,7 @@ function isNamedOffer(o){
 
 // Cor estável por nome (não por posição no ranking) -- assim a pílula e o
 // card da mesma oferta mantêm a mesma cor mesmo quando a ordem do ranking
-// muda (o que acontece toda vez que uma oferta é habilitada/desabilitada).
+// muda (o que acontece toda veze que uma oferta é habilitada/desabilitada).
 function offerColorForName(name){
   let hash = 0;
   const s = (name || '').toLowerCase();
@@ -1739,7 +1781,7 @@ function renderStats(){
     const color = offerColorForName(r.name);
     const stab = stabilityInfo(r.amplitude);
     const isFirst = i === 0;
-    // Escala absoluta (0-100%), não mais relativa ao líder -- do jeito que
+    // Escala absoluta (0-100%), não mais relativa ao líder -- do jeto que
     // era antes, a oferta líder sempre aparecia com a barra 100% cheia,
     // não importa se ela tivesse liderado em 40% ou 90% das comparações.
     const barWidth = (r.leadRate * 100).toFixed(1);
