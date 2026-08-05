@@ -20,6 +20,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -200,11 +201,16 @@
 
   .info{
     position:relative;
-    width:13px;height:13px;border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:13px;height:13px;
+    flex-shrink:0;
+    border-radius:50%;
     border:1px solid var(--ink-dim);
     color:var(--ink-dim);
-    font-size:9px;line-height:11px;text-align:center;
-    cursor:pointer;flex:none;
+    font-size:9px;line-height:1;text-align:center;
+    cursor:pointer;
     background:none;
     padding:0;
   }
@@ -465,7 +471,7 @@
   }
   .stats-rank-badge.first{border-color:var(--win);color:var(--win);}
   .stats-rank-dot{width:8px;height:8px;border-radius:50%;flex:none;}
-  .stats-rank-name{font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .stats-rank-name{font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .stats-rank-right{text-align:right;flex:none;}
   .stats-rank-pct{font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1;}
   .stats-rank-pct.first{color:var(--win);}
@@ -489,17 +495,29 @@
   }
   .stats-rank-body{
     display:grid;
-    grid-template-columns:1fr 130px;
-    gap:16px;
+    grid-template-columns:1fr minmax(180px, max-content);
+    gap:20px;
     align-items:end;
     border-top:1px solid var(--line);
     padding-top:12px;
   }
-  .stats-spark-label{font-size:10.5px;color:var(--ink-dim);margin-bottom:6px;}
-  .stats-detail-col{display:flex;flex-direction:column;gap:6px;font-size:11.5px;}
-  .stats-detail-row{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--ink-dim);}
-  .stats-detail-row strong{color:var(--ink);font-weight:600;}
-  .stats-detail-row .info{margin-left:4px;}
+  .stats-spark-label{font-size:10.5px;color:var(--ink-dim);margin-bottom:8px;letter-spacing:0.2px;}
+  .stats-spark-wrap{position:relative;line-height:0;}
+  .stats-spark-dot{
+    position:absolute;
+    width:7px;height:7px;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 0 2px var(--panel-hi);
+    pointer-events:none;
+  }
+  .stats-detail-col{display:flex;flex-direction:column;gap:8px;font-size:12px;}
+  .stats-detail-row{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    color:var(--ink-dim);white-space:nowrap;
+  }
+  .stats-detail-row strong{color:var(--ink);font-weight:600;letter-spacing:0.2px;}
+  .stats-detail-row .info{margin-left:2px;}
   .stats-low{color:var(--win);}
   .stats-mid{color:var(--warn);}
   .stats-high{color:var(--err);}
@@ -622,7 +640,7 @@
     padding-top:16px;
     display:flex;flex-direction:column;gap:4px;
   }
-  footer {font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
+  footer p{font-size:11px;color:var(--ink-dim);margin:0;line-height:1.6;}
   footer a{color:var(--techfx);text-decoration:underline;}
   footer a:hover{color:var(--higlobe);}
 
@@ -810,7 +828,7 @@
 </div>
 
 <script>
-const APP_VERSION = '0.5.5';
+const APP_VERSION = '0.5.6';
 // Formatação de números, datas e horas segue o idioma do navegador da pessoa,
 // em vez de fixar 'pt-BR' -- com esse valor como fallback caso o navegador
 // não informe (ou informe algo vazio/inesperado).
@@ -1038,7 +1056,7 @@ function showFeedbackResult(type){
     feedbackResultTitle.classList.add('win');
     feedbackResultMessage.textContent = 'Obrigado! Sua opinião ajuda a priorizar melhorias no Cotaê.';
     feedbackResultActions.innerHTML = '';
-    setTimeout(closeFeedbackModal, 3200);
+    setTimeout(closeFeedbackModal, 1800);
   } else {
     feedbackResultTitle.textContent = '✕ Não foi possível enviar';
     feedbackResultTitle.classList.add('err');
@@ -1342,6 +1360,7 @@ function renderOffers(){
       offers.splice(idx + 1, 0, copy);
       persistOffersState();
       renderOffers();
+      window.goatcounter && window.goatcounter.count({ path: 'oferta_duplicada', event: true });
     });
     card.querySelector('.remove-btn').addEventListener('click', () => {
       // Se a oferta já estava salva na conta, isso remove só da tela --
@@ -1592,7 +1611,7 @@ function isNamedOffer(o){
 
 // Cor estável por nome (não por posição no ranking) -- assim a pílula e o
 // card da mesma oferta mantêm a mesma cor mesmo quando a ordem do ranking
-// muda (o que acontece toda veze que uma oferta é habilitada/desabilitada).
+// muda (o que acontece toda vez que uma oferta é habilitada/desabilitada).
 function offerColorForName(name){
   let hash = 0;
   const s = (name || '').toLowerCase();
@@ -1678,7 +1697,7 @@ function computeOfferStats(periodKey){
   return rows;
 }
 
-function buildSparklineSvg(values, color){
+function buildSparklineChart(values, color){
   if (values.length < 2){
     return '';
   }
@@ -1688,17 +1707,28 @@ function buildSparklineSvg(values, color){
   const w = 200, h = 56, pad = 4;
   const baseY = h - pad;
   const step = (w - pad * 2) / (values.length - 1);
-  const points = values.map((v, i) => {
+  const pts = values.map((v, i) => {
     const x = pad + i * step;
     const y = pad + (1 - (v - min) / span) * (baseY - pad);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-  const last = points.split(' ').pop().split(',');
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" aria-hidden="true">
-    <line x1="${pad}" y1="${baseY}" x2="${w - pad}" y2="${baseY}" stroke="var(--line)" stroke-width="1"/>
-    <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${color}"/>
-  </svg>`;
+    return { x, y };
+  });
+  const pointsStr = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const last = pts[pts.length - 1];
+  // O <svg> usa preserveAspectRatio="none" pra esticar a linha e preencher
+  // toda a largura do card -- ótimo pra linha, mas deformaria um <circle>
+  // desenhado nas mesmas coordenadas (viraria uma elipse, não um círculo).
+  // Por isso o ponto final é um elemento HTML de verdade, posicionado por
+  // porcentagem (mesmo sistema de coordenadas do svg esticado) -- assim
+  // fica sempre perfeitamente circular, não importa o quanto o svg estique.
+  const lastXPct = (last.x / w * 100).toFixed(2);
+  const lastYPct = (last.y / h * 100).toFixed(2);
+  return `<div class="stats-spark-wrap">
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="${pad}" y1="${baseY}" x2="${w - pad}" y2="${baseY}" stroke="var(--line)" stroke-width="1"/>
+      <polyline points="${pointsStr}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="stats-spark-dot" style="left:${lastXPct}%;top:${lastYPct}%;background:${color};"></span>
+  </div>`;
 }
 
 // Legenda curta do período em uso, pro rótulo acima do gráfico de tendência.
@@ -1781,7 +1811,7 @@ function renderStats(){
     const color = offerColorForName(r.name);
     const stab = stabilityInfo(r.amplitude);
     const isFirst = i === 0;
-    // Escala absoluta (0-100%), não mais relativa ao líder -- do jeto que
+    // Escala absoluta (0-100%), não mais relativa ao líder -- do jeito que
     // era antes, a oferta líder sempre aparecia com a barra 100% cheia,
     // não importa se ela tivesse liderado em 40% ou 90% das comparações.
     const barWidth = (r.leadRate * 100).toFixed(1);
@@ -1809,11 +1839,11 @@ function renderStats(){
         <div class="stats-rank-body">
           <div>
             <div class="stats-spark-label">Tendência do VET · ${periodCaption}</div>
-            ${buildSparklineSvg(r.sparkline, color)}
+            ${buildSparklineChart(r.sparkline, color)}
           </div>
           <div class="stats-detail-col">
             <div class="stats-detail-row"><span>VET médio</span><strong>${fmt(r.avg)}</strong></div>
-            <div class="stats-detail-row"><span>Faixa</span><span>${fmt(r.min)}–${fmt(r.max)}</span></div>
+            <div class="stats-detail-row"><span>Faixa</span><strong>${fmt(r.min)}–${fmt(r.max)}</strong></div>
             <div class="stats-detail-row">
               <span>Variação</span>
               <span class="${stab.cls}">${stab.label}
@@ -1968,7 +1998,6 @@ document.querySelectorAll('#historyTabs .tab-btn').forEach(btn => {
 });
 
 document.getElementById('amountInfo').addEventListener('click', e => {
-  e.preventDefault();
   e.stopPropagation();
   const info = e.currentTarget;
   const wasOpen = info.classList.contains('open');
