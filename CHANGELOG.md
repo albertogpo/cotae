@@ -6,6 +6,26 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 > As versões 0.1.0 e 0.2.0 são retroativas: não foram numeradas no momento em que foram publicadas. O versionamento formal começa a partir da 0.3.0.
 
+## [0.5.6]
+
+### Corrigido
+- Ícone de tooltip (i) aparecia distorcido (oval) em vez de circular -- era um `<span>` inline sem `display` explícito, que ignora `width`/`height`.
+- Bolinha do sparkline de tendência aparecia oval -- o `<circle>` do SVG era esticado pelo mesmo `preserveAspectRatio="none"` usado pra esticar a linha até a borda do card.
+- Textos "VET médio", "Faixa" e "Variação" na aba Consistência histórica quebravam de linha -- coluna de detalhes era estreita demais (130px fixos).
+
+### Alterado
+- Coluna de detalhes do card de ranking agora cresce conforme o conteúdo, em vez de largura fixa.
+- Nome da oferta no card de ranking ganhou mais peso visual (hierarquia).
+- Valor de "Faixa" agora em negrito, consistente com "VET médio".
+
+## [0.5.5]
+
+### Adicionado
+- Feedback do envio (sucesso ou erro) exibido dentro do próprio modal, no lugar do formulário -- some sozinho após alguns segundos em caso de sucesso, ou oferece um botão "Voltar" em caso de erro, sem perder a nota e o comentário já preenchidos.
+
+### Alterado
+- Removido o uso de `alert()` do navegador no fluxo de envio de feedback, substituído pela mensagem de resultado dentro do modal, no mesmo estilo visual do restante do app.
+
 ## [0.5.4]
 
 ### Corrigido
